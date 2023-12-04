@@ -1,0 +1,98 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Lista de Usuários</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="icon" href="https://simatec.com.br/wp-content/uploads/2017/03/cropped-logotipo_Horizontal_Poli-32x32.png" sizes="32x32">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+	<style>
+        .btn-spacing {
+            margin-right: 5px; /* Espaço entre os botões */
+        }
+    </style>
+</head>
+<body>
+    <div class="text-white bg-primary p-3" style="font-family: Arial, sans-serif;">
+        <h2 style="font-size: 24px; display: contents;">
+            Lista de Usuários
+            <div class="float-end" style="font-size: 12px; color: lightgray;">
+                <i class="fa fa-user fa-1x"></i> 
+                <a id="nomeUsuario" href="#" style="padding-left: 4px;color: lightgray;">-</a>
+            </div>
+        </h2>
+    </div>
+    <div class="container mt-4">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Email</th>
+                    <th>Função</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody id="user-list">
+                <!-- Linhas de usuários serão adicionadas aqui pelo JavaScript -->
+            </tbody>
+        </table>
+		<button type="button" class="btn btn-primary" onclick="voltarParaIndex()">Voltar</button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-1.9.1.js"></script>
+
+    <script>
+        var urlParams = new URLSearchParams(window.location.search);
+        var token = urlParams.get('token');     
+        $(document).ready(function() {
+			if(validateToken()){
+				$('#nomeUsuario').text(localStorage.getItem('uname'));
+				carregarUsuarios();
+			}
+        });
+
+        function carregarUsuarios() {
+            $.ajax({
+                url: 'https://localhost:44349/api/usuario',
+                type: 'GET',
+                success: function(data) {
+                    var tabelaUsuarios = '';
+                    data.forEach(function(usuario) {
+                        tabelaUsuarios += '<tr>';
+                        tabelaUsuarios += '<td>' + usuario.nome + '</td>';
+                        tabelaUsuarios += '<td>' + usuario.email + '</td>';
+                        tabelaUsuarios += '<td>' + usuario.funcoes.reduce((max, funcao) => max.id > funcao.id ? max : funcao).nome + '</td>';
+                        tabelaUsuarios += '<td>';
+                        tabelaUsuarios += '<button class="btn btn-primary btn-sm btn-spacing" onclick="editarUsuario('+ usuario.id +')" data-toggle="tooltip" data-placement="top" title="Editar"><i class="fas fa-edit"></i></button>';
+                        tabelaUsuarios += '<button class="btn btn-danger btn-sm btn-spacing" data-toggle="tooltip" data-placement="top" title="Inativar"><i class="fas fa-ban"></i></button>';
+                        tabelaUsuarios += '<button class="btn btn-success btn-sm" data-toggle="tooltip" data-placement="top" title="Ativar"><i class="fas fa-check"></i></button>';
+                        tabelaUsuarios += '</td>';
+                        tabelaUsuarios += '</tr>';
+                    });
+
+                    $('#user-list').html(tabelaUsuarios);
+                }
+            });
+        }
+		function editarUsuario(idUsuario) {
+			window.location.href = "./edicao_usuario.html?id=" + idUsuario;
+		}
+		
+		function voltarParaIndex() {
+			window.location.href = "./index.html";
+		}
+		function validateToken() {
+			token = localStorage.getItem("jwtToken");
+			var maiorFunc = localStorage.getItem("maiorFunc");
+			if (token && maiorFunc >= 3) {
+				return true;
+			}
+			else{
+				window.location.href = "https://localhost:44349/home";
+				return false;
+			}
+
+		}
+    </script>
+</body>
+</html>

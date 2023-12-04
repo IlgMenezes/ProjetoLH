@@ -1,0 +1,844 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+	<title>Cadastro de Apontamento</title>
+	<link rel="stylesheet"
+		href="https://cdn.jsdelivr.net/npm/bootstrap-datepicker@1.10.0/dist/css/bootstrap-datepicker3.min.css">
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+	<link rel="icon" href="https://simatec.com.br/wp-content/uploads/2017/03/cropped-logotipo_Horizontal_Poli-32x32.png"
+		sizes="32x32">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">		
+</head>
+
+<body>
+	<div class="text-white bg-primary p-3" style="font-family: Arial, sans-serif;">
+        <h2 style="font-size: 24px; display: contents;">
+            Cadastro de Apontamento
+			<div class="float-end" style="font-size: 12px; color: lightgray;">
+				<i class="fa fa-user fa-1x"></i> 
+				<a  id="nomeUsuario" href="#" style="padding-left: 4px;color: lightgray;">Ilg Menezes</a>
+			</div>
+        </h2>
+	</div>
+	<div class="container">
+		<form class="recuo_form row">
+			<div class="col-sm-6">
+				<div class="mb-3 row">
+					<label for="nome" class="form-label col-sm-4">Nome do Funcionário:</label>
+					<div class="col-sm-8">
+						<input type="text" id="nome" name="nome" class="form-control" required disabled>
+					</div>
+				</div>
+
+				<div class="mb-3 row">
+					<label for="data" class="form-label col-sm-4">Data:</label>
+					<div class="col-sm-8">
+						<div class="input-group">
+							<input type="text" id="data" name="data" class="form-control" placeholder="DD/MM/AAAA" required>
+							<button class="btn btn-outline-secondary" type="button" id="calendario"><i class="bi bi-calendar"></i></button>
+						</div>
+					</div>
+				</div>
+
+				<div class="mb-3 row">
+					<label for="setor" class="form-label col-sm-4">Setor:</label>
+					<div class="col-sm-8">
+						<select id="setor" name="setor" class="form-select" required>
+							<option value="Comercial">Comercial</option>
+							<option value="Projetos">Projetos</option>
+							<option value="Tecnologia">Tecnologia</option>
+							<option value="Diretoria">Diretoria</option>
+							<option value="Contratos">Contratos</option>
+							<option value="OrÃ§amento">OrÃ§amento</option>
+							<option value="Almoxarifado">Almoxarifado</option>
+							<option value="Administrativo">Administrativo</option>
+							<option value="Vendas">Vendas</option>
+							<option value="Compras">Compras</option>
+							<option value="Financeiro">Financeiro</option>
+							<option value="Oficina">Oficina</option>
+						</select>
+					</div>
+				</div>
+
+				<div class="mb-3 row">
+					<label for="atividade" class="form-label col-sm-4">Atividade:</label>
+					<div class="col-sm-8">
+						<select id="atividade" name="atividade" class="form-select" required>
+                            <option value="As-Built">As-Built</option>
+                            <option value="AssistÃªncia TÃ©cnica / Preventiva">AssistÃªncia TÃ©cnica / Preventiva</option>
+                            <option value="Atestado MÃ©dico">Atestado MÃ©dico</option>
+                            <option value="Atividade interna / DisponÃ­vel">Atividade interna / DisponÃ­vel</option>
+                            <option value="Banco de Horas">Banco de Horas</option>
+                            <option value="Comercial / ElaboraÃ§Ã£o Proposta">Comercial / ElaboraÃ§Ã£o Proposta</option>
+                            <option value="Comissionamento / Startup">Comissionamento / Startup</option>
+                            <option value="Desenvolvimento de Manuais">Desenvolvimento de Manuais</option>
+                            <option value="Desenvolvimento IHM / SCADA">Desenvolvimento IHM / SCADA</option>
+                            <option value="Desenvolvimento PIC">Desenvolvimento PIC</option>
+                            <option value="Desenvolvimento Ti">Desenvolvimento Ti</option>
+                            <option value="Deslocamento">Deslocamento</option>
+                            <option value="ElaboraÃ§Ã£o de Documentos de Projetos">ElaboraÃ§Ã£o de Documentos de Projetos</option>
+                            <option value="Estudo de DocumentaÃ§Ã£o do Projeto">Estudo de DocumentaÃ§Ã£o do Projeto</option>
+                            <option value="Exames MÃ©dicos / LiberaÃ§Ã£o Clientes">Exames MÃ©dicos / LiberaÃ§Ã£o Clientes</option>
+                            <option value="FÃ©rias (ClT)">FÃ©rias (ClT)</option>
+                            <!-- Adicione mais opÃ§Ãµes aqui -->
+                        </select>
+					</div>
+				</div>
+
+				<div class="mb-3 row">
+					<label for="centrodecusto" class="form-label col-sm-4">Centro de Custos:</label>
+					<div class="col-sm-8">
+						<select id="centrodecusto" name="centrodecusto" class="form-select" required>
+							<option value="">Selecione um centro de custo...</option>
+						</select>
+					</div>
+				</div>
+			</div>
+			<div id="CadastroDespesas" class="col-sm-6">
+				<form id="formDespesas" enctype="multipart/form-data">
+					<div class="mb-3 row">
+						<label for="observacao" class="form-label col-sm-4">Observação:</label>
+						<div class="col-sm-8">
+							<textarea id="descricaoObservacao" name="descricaoObservacao" class="form-control" rows="2" maxlength="998"></textarea>
+						</div>
+					</div>
+					<div class="mb-3 row">
+						<label for="tipoDespesa" class="form-label col-sm-4">Tipo de Despesa:</label>
+						<div class="col-sm-8">
+							<select id="tipoDespesa" name="tipoDespesa" class="form-select">
+								<option value="CombustÃ­vel">Selecione uma despesa...</option>
+							</select>
+						</div>
+					</div>
+
+					<div class="mb-3 row">
+						<label for="valor" class="form-label col-sm-4">Valor:</label>
+						<div class="col-sm-8">
+							<input id="valor" name="valor" class="form-control" >
+						</div>
+					</div>
+
+					<div class="mb-3 row">
+						<label for="arquivo" class="form-label col-sm-4">Upload de Arquivos:</label>
+						<div class="col-sm-8">
+							<input type="file" id="arquivo" name="arquivo" class="form-control-file">
+						</div>
+					</div>
+
+					<div class="row">
+						<div class="col-sm-8">
+
+						</div>
+					</div>
+				</form>
+				<div class="wrapper">
+					<div class="botao">
+						<button type="button" class="btn btn-primary" onclick="carregarDespesa()">Inserir Despesa</button>
+					</div>
+					<div class="tabela">
+						<div id="tabelaContainer">
+							<table id="tabelaDespesas" class="table" style="display: none;">
+								<thead>
+									<tr>
+										<th>Descrição</th>
+										<th>Valor</th>
+									</tr>
+								</thead>
+								<tbody>
+									<!-- Os itens da tabela serÃ£o adicionados dinamicamente -->
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+
+			</div>
+			<div>
+				<input type="radio" id="horasTrabalhadasRadio" name="tipoApontamento" value="horasTrabalhadas" checked>
+				<label for="horasTrabalhadasRadio" style="margin-right: 10px">Horas Trabalhadas</label>
+
+				<input type="radio" id="entradaSaidaRadio" name="tipoApontamento" value="entradaSaida">
+				<label for="entradaSaidaRadio">Entrada/Saída</label>
+			</div>
+
+			<!-- Opção Horas Trabalhadas -->
+			<div id="horasTrabalhadasDiv" class="row recuo_horas">
+				<label for="horasTrabalhadasInput">Horas Trabalhadas:</label>
+				<input type="text" id="horasTrabalhadasInput" name="horasTrabalhadas" >
+			</div>
+
+			<!-- Opção Entrada/Saída (o conteúdo atual da div) -->
+			<div id="entradaSaidaDiv" class="row recuo_horarios" style="display:none;">
+				<div class="col">
+					<div class="input-container">
+						<label for="entrada1" class="form-label label_horarios">Entrada 1:</label>
+						<input type="text" id="entrada1" name="entrada1" class="form-control small-input" placeholder="HH:MM" required>
+					</div>
+				</div>
+				<div class="col">
+					<div class="input-container">
+						<label for="saida1" class="form-label label_horarios">Saída 1:</label>
+						<input type="text" id="saida1" name="saida1" class="form-control small-input" placeholder="HH:MM" required>
+					</div>
+				</div>
+				<div class="col">
+					<div class="input-container">
+						<label for="entrada2" class="form-label label_horarios">Entrada 2:</label>
+						<input type="text" id="entrada2" name="entrada2" class="form-control small-input" placeholder="HH:MM">
+					</div>
+				</div>
+				<div class="col">
+					<div class="input-container">
+						<label for="saida2" class="form-label label_horarios">Saída 2:</label>
+						<input type="text" id="saida2" name="saida2" class="form-control small-input" placeholder="HH:MM">
+					</div>
+				</div>
+				<div class="col">
+					<div class="input-container">
+						<label for="entrada3" class="form-label label_horarios">Entrada 3:</label>
+						<input type="text" id="entrada3" name="entrada3" class="form-control small-input" placeholder="HH:MM">
+					</div>
+				</div>
+				<div class="col">
+					<div class="input-container">
+						<label for="saida3" class="form-label label_horarios">Saída 3:</label>
+						<input type="text" id="saida3" name="saida3" class="form-control small-input" placeholder="HH:MM">
+					</div>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-sm-10">
+					<button type="button" class="btn btn-primary" onclick="salvarApontamento()">Salvar</button>
+					<button type="button" class="btn btn-primary" onclick="voltarParaIndex()">Voltar</button>
+				</div>
+			</div>
+		</form>
+	</div>
+
+	<style>
+		.radio {
+		  margin-left: 10px; /* Ajuste o valor de acordo com a separação desejada */
+		}
+		.recuo_form {
+			padding: 50px 0 0 0;
+		}
+
+		.recuo_horarios {
+			padding: 2% 30% 5% 10%;
+			width: 100%;
+		}
+		
+		.recuo_horas {
+			padding: 2% 30% 5% 10%;
+			width: 60%;
+		}
+
+		.label_horarios {
+			font-size: 12px;
+			font-weight: bold;
+			margin-bottom: 0;
+		}
+
+		.center {
+			text-align: center;
+		}
+
+		.recuo_textareas {
+			margin-left: 20px;
+		}
+
+		.wrapper {
+			display: grid;
+			grid-template-columns: 1fr 3fr;
+			grid-gap: 20px;
+			/* EspaÃ§amento entre as colunas */
+		}
+
+
+
+		.col {
+			margin-bottom: 10px;
+			margin-right: 10px;
+			/* Use a variÃ¡vel --distancia-campos para controlar a distÃ¢ncia */
+		}
+
+		.input-container {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+		}
+				
+		.required-field {
+			border: 1px solid red;
+			background-color: #ffe6e6;
+		}
+	</style>
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+	<script src="https://code.jquery.com/jquery-1.9.1.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/js/bootstrap-datepicker.min.js">
+	</script>
+	<script
+		src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/locales/bootstrap-datepicker.pt-BR.min.js">
+	</script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-maskmoney/3.0.2/jquery.maskMoney.min.js"
+		integrity="sha512-Rdk63VC+1UYzGSgd3u2iadi0joUrcwX0IWp2rTh6KXFoAmgOjRS99Vynz1lJPT8dLjvo6JZOqpAHJyfCEZ5KoA=="
+		crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+	<script>
+		var urlParams = new URLSearchParams(window.location.search);
+        var token = urlParams.get('token');
+		var todasAtividades = [];
+		var todosCentrosDeCusto = [];
+		var despesasInseridas = [];
+		var uid = "";
+		
+        $(document).ready(function() {
+			if(validateToken()){
+				uid = localStorage.getItem('uid');
+				$("#nome").val(localStorage.getItem('uname'));
+				$('#nomeUsuario').text(localStorage.getItem('uname'));
+				formatHourMask()
+				configurarRadioHoras();
+				exibirOcultarSaida3();
+				$("#data").datepicker({
+					format: 'dd/mm/yyyy',
+					todayBtn: 'linked',
+					todayHighlight: true,
+					autoclose: true,
+					language: 'pt-BR',
+					endDate: '+1d',
+					datesDisabled: '+1d'		
+				}).on('show', function(e){
+					e.preventDefault();
+					e.stopPropagation();
+				});
+				
+				$("#data").datepicker('update',new Date());
+
+				$('#calendario').on('click', function() {
+					$("#data").datepicker('show');
+				});
+				
+				$('#valor').maskMoney({
+					decimal: ',',
+					thousands: '.',
+					allowZero: true,
+					prefix:'R$ ',
+					allowNegative: false
+				});
+				
+				$('#saida2').on('change', function() {
+					exibirOcultarSaida3();
+				});
+				
+				carregarOpcoesSelect();
+				filtrarAtividades();
+				limparFormulario();
+			}
+        });
+		function exibirOcultarSaida3() {
+			var entrada2 = $('#entrada2').val();
+			var saida2 = $('#saida2').val();
+			
+			if (entrada2.trim() !== '' && saida2.trim() !== '') {
+				// Exibir os campos "Entrada 3" e "SaÃ­da 3"
+				$('#entrada3').parent().show();
+				$('#saida3').parent().show();
+			} else {
+				// Ocultar os campos "Entrada 3" e "SaÃ­da 3"
+				$('#entrada3').parent().hide();
+				$('#saida3').parent().hide();
+			}
+		}
+		
+		function configurarRadioHoras() {
+			$('input[name="tipoApontamento"]').change(function() {
+			  if ($(this).val() === 'horasTrabalhadas') {
+				$('#horasTrabalhadasDiv').show();
+				$('#entradaSaidaDiv').hide();
+			  } else {
+				$('#horasTrabalhadasDiv').hide();
+				$('#entradaSaidaDiv').show();
+			  }
+			});
+
+			// Disparar o evento change no carregamento da página para garantir que a visibilidade correta seja aplicada
+			$('#horasTrabalhadasRadio').trigger('change');
+		}
+		function carregarDespesa() {
+			// Obter os valores dos campos do formulÃ¡rio
+			var descricaoTipoDespesa = $("#tipoDespesa option:selected").text();
+			var tipoDespesa = $("#tipoDespesa").val();
+			var valor = $("#valor").val();
+			var arquivo = $("#arquivo")[0].files[0];
+			var nomeArquivo = arquivo ? arquivo.name : "";
+			var arquivoBase64;
+			
+			// Verificar se os campos obrigatÃ³rios estÃ£o preenchidos
+			if (!tipoDespesa || valor.trim() === '' || valor.trim() === "R$ 0,00") {
+				alert("Preencha todos os campos da despesa.");
+				return;
+			}
+
+			// Criar uma nova linha na tabela
+			var tabela = document.getElementById('tabelaDespesas');
+			var newRow = tabela.insertRow();
+
+			// Inserir as cÃ©lulas na nova linha
+			var celulaTipoDespesa = newRow.insertCell(0);
+			var celulaValor = newRow.insertCell(1);
+
+			// Definir o conteÃºdo das cÃ©lulas
+			celulaTipoDespesa.innerHTML = descricaoTipoDespesa;
+			celulaValor.innerHTML = valor;
+
+			// Limpar os campos do formulÃ¡rio
+			document.getElementById('tipoDespesa').value = '';
+			document.getElementById('valor').value = '';
+			document.getElementById('arquivo').value = '';
+
+			// Exibir a tabela se houver registros
+			tabela.style.display = tabela.rows.length > 1 ? 'table' : 'none';
+			
+			if (arquivo) {
+				var reader = new FileReader();
+				reader.onload = function(event) {
+					arquivoBase64 = event.target.result.split(',')[1];
+					adicionarDespesa(tipoDespesa, valor, arquivoBase64, nomeArquivo);
+				};
+				reader.readAsDataURL(arquivo);
+			} else {
+				adicionarDespesa(tipoDespesa, valor, arquivoBase64, nomeArquivo);
+			}
+		}
+		
+		function adicionarDespesa(tipoDespesa, valor, arquivoBase64, nomeArquivo) {
+			valor = valor.replace("R$", "").replace(/\./g, "").replace(",", ".");
+			var valorDecimal = parseFloat(valor);
+			var despesa = {
+				IdTipoDespesa: parseInt(tipoDespesa),
+				Valor: valorDecimal,
+				ArquivoBase64: arquivoBase64,
+				NomeArquivo: nomeArquivo
+			};
+
+			despesasInseridas.push(despesa);
+		}
+		
+		function carregarOpcoesSelect() {
+			$.ajax({
+				url: 'https://sghapi20230704112902.azurewebsites.net/api/Apontamento/GetApontamentoViewModel',
+				data: { usuarioId: uid },
+				type: 'GET',
+				headers: {
+					'Content-Type': 'application/json',
+					'Authorization': 'Bearer ' + token 
+				},
+				success: function(data) {
+					var centroDeCustoOptions = '<option value="-1" disabled selected>Selecione...</option>';
+					data.centrosDeCusto.forEach(function(centroDeCusto) {
+						centroDeCustoOptions += '<option value="' + centroDeCusto.id + '">' + centroDeCusto.nomeCentroDeCusto + '</option>';
+					});
+					$('#centrodecusto').html(centroDeCustoOptions);
+
+					var tipoDespesaOptions = '<option value="-1" disabled selected>Selecione...</option>';
+					data.tiposDespesa.forEach(function(tipoDespesa) {
+						tipoDespesaOptions += '<option value="' + tipoDespesa.id + '">' + tipoDespesa.descricao + '</option>';
+					});
+					$('#tipoDespesa').html(tipoDespesaOptions);
+
+					var setorOptions = '<option value="-1" disabled selected>Selecione...</option>';
+					data.setores.forEach(function(setor) {
+						setorOptions += '<option value="' + setor.id + '">' + setor.nome + '</option>';
+					});
+					$('#setor').html(setorOptions);
+
+					var atividadeOptions = '<option value="-1" disabled selected>Selecione...</option>';
+					data.atividades.forEach(function(atividade) {
+						atividadeOptions += '<option value="' + atividade.id + '">' + atividade.nome + '</option>';
+					});
+					$('#atividade').html(atividadeOptions);
+					
+					todasAtividades = data.atividades;
+					todosCentrosDeCusto = data.centrosDeCusto;
+				}
+			});
+		}
+		
+		function filtrarAtividades(){
+			// Filtrar as atividades com base no setor selecionado
+			var selectSetor = $("#setor");
+
+			// Adicione o ouvinte de eventos ao select de Setor
+			selectSetor.on("change", function() {
+				var setorSelecionado = parseInt($(this).val());
+
+				// Filtrar as atividades pelo setor selecionado
+				var atividadesFiltradas = todasAtividades.filter(function(atividade) {
+					return atividade.idSetor == setorSelecionado;
+				});
+
+				// Popule o select de Atividade com as atividades filtradas
+				var selectAtividade = $("#atividade");
+				selectAtividade.empty(); // Limpa as opÃ§Ãµes existentes
+
+				selectAtividade.append(new Option("Selecione...", "-1"));
+				atividadesFiltradas.forEach(function(atividade) {
+					selectAtividade.append(new Option(atividade.nome, atividade.id));
+				});
+			});
+		}
+
+		// FunÃ§Ã£o para fazer a requisiÃ§Ã£o HTTP GET para obter os centros de custo
+		function obterCentrosDeCusto() {
+			fetch('https://sghapi20230704112902.azurewebsites.net/api/CentroDeCusto/GetCentrosDeCusto') // Substitua 'URL_DO_BACKEND' pela URL real do seu backend que retorna os centros de custo em formato JSON
+				.then((response) => response.json())
+				.then((data) => {
+					preencherCentrosDeCusto(data); // Chama a funÃ§Ã£o para preencher o select com os dados retornados do backend
+				})
+				.catch((error) => {
+					console.error('Erro ao obter centros de custo:', error);
+				});
+		}
+		
+		function construirListaRegistrosApontamento(data) {
+			var registros = [];
+			var horarios = [$("#entrada1"), $("#entrada2"), $("#entrada3"), $("#saida1"), $("#saida2"), $("#saida3")];
+
+			var dateStr = $("#data").val()
+			var dia  = dateStr.split("/")[0];
+			var mes  = dateStr.split("/")[1];
+			var ano  = dateStr.split("/")[2];
+
+			for (var i = 0; i < horarios.length; i++) {
+				var horario = horarios[i].val();
+
+				if (horario.trim() !== "") {
+					var dh = new Date(ano, mes, dia);
+					dh.setHours(horario.split(":")[0]);
+					dh.setMinutes(horario.split(":")[1]);
+					dh.setSeconds(0);
+					var RegistroApontamento = {
+						DataHora: convertToUTC(dh.toString())
+					};
+
+					registros.push(RegistroApontamento);
+				}
+			}
+
+			return registros;
+		}
+		
+		function salvarApontamento() {
+			// Recuperar os dados do formulÃ¡rio
+			var data = formatDate($("#data").val());
+			var atividade = obterAtividadeSelecionada();
+			var centroDeCusto = obterCentroDeCustoSelecionado();
+			var registros = null;
+			var funcionario = { id: parseInt(uid) };
+			var horasTrabalhadas = null;
+			var descricaoObservacao = $("#descricaoObservacao").val();
+			
+			var tipoApontamento = document.querySelector('input[name="tipoApontamento"]:checked').value;
+			
+			if (tipoApontamento === 'horasTrabalhadas') {
+				horasTrabalhadas = converterParaDecimal(document.getElementById('horasTrabalhadasInput').value);
+			} else {
+				registros = construirListaRegistrosApontamento(data);
+			}
+			
+			if(!formularioValido()){
+				return;
+			}
+			
+			var apontamento = {
+				Funcionario: funcionario,
+				Atividade: atividade,
+				CentroDeCusto: centroDeCusto,
+				Data: data,
+				Registros: registros,
+				Despesas: despesasInseridas,
+				HorasTrabalhadas: horasTrabalhadas,
+				Observacao: descricaoObservacao
+			};
+			
+			// Enviar os dados para o backend
+			enviarDadosParaBackend(apontamento);
+		}
+		
+		function enviarDadosParaBackend(apontamento) {
+		
+			
+		
+			// Enviar uma solicitaÃ§Ã£o HTTP POST para o backend
+			fetch('https://sghapi20230704112902.azurewebsites.net/api/Apontamento', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'Authorization': 'Bearer ' + token  // Adicione o cabeÃ§alho de autorizaÃ§Ã£o aqui
+				},
+				body: JSON.stringify(apontamento)
+			})
+			.then(response => response.json())
+			.then(data => {
+				// Tratar a resposta do backend, se necessÃ¡rio
+				console.log(data);
+				// Redirecionar ou exibir uma mensagem de sucesso, por exemplo
+				alert('Apontamento salvo com sucesso!');
+				limparFormulario();
+			})
+			.catch(error => {
+				// Tratar erros de requisiÃ§Ã£o ou do backend, se necessÃ¡rio
+				console.error(error);
+				// Exibir uma mensagem de erro, por exemplo
+				alert('Ocorreu um erro ao salvar o centro de custo. Por favor, tente novamente mais tarde.');
+			});
+		}
+		
+		function obterAtividadeSelecionada() {
+			var idAtividadeSelecionada = $("#atividade").val();
+			return todasAtividades.find(atividade => atividade.id.toString() === idAtividadeSelecionada);;
+		}
+		
+		function obterCentroDeCustoSelecionado() {
+			var idCentroDeCustoSelecionado = $("#centrodecusto").val();
+			return todosCentrosDeCusto.find(centroCusto => centroCusto.id.toString() === idCentroDeCustoSelecionado);
+		}
+		
+		function formatDate(dateStr) {
+			// Verifica se a data nÃ£o Ã© vazia ou nula
+			if (!dateStr) return "";
+			var dia  = dateStr.split("/")[0];
+			var mes  = dateStr.split("/")[1];
+			var ano  = dateStr.split("/")[2];
+
+			return `${ano}-${mes}-${dia}`;
+		}
+		
+		function formatHourMask() {
+			$('#horasTrabalhadasInput').on('input', function(e) {
+			  // Permite números, vírgula e dois pontos, mas impede múltiplos dois pontos ou vírgulas
+			  this.value = this.value.replace(/[^0-9,:]/g, '')
+									 .replace(/(:).*\1/, '$1')
+									 .replace(/(,).*\1/, '$1');
+			});
+		
+			$(".small-input").attr('maxlength', '4');
+			$(".small-input").attr('placeholder', 'HH:MM');
+			$(".small-input").bind({
+				keydown: CheckNum,
+				blur: formateHHMM,
+				focus: unformateHHMM
+			});
+		}
+		function converterParaDecimal(valor) {
+		  if (valor.includes(':')) {
+			let [horas, minutos] = valor.split(':');
+			return parseFloat((parseInt(horas, 10) + (parseInt(minutos, 10) / 60)).toFixed(2));
+		  }
+		  if (valor.includes(',')) {
+			return parseFloat(valor.replace(',', '.'));
+		  }
+		  return parseFloat(valor);
+		}		
+	
+		function CheckNum(e) {
+			// Allow: backspace, delete, tab, escape, enter and .
+			if ($.inArray(e.keyCode, [46, 8, 9, 27, 13]) !== -1 ||
+				 // Allow: Ctrl+A, Command+A
+				(e.keyCode === 65 && (e.ctrlKey === true || e.metaKey ===             true)) || 
+				 // Allow: home, end, left, right, down, up
+				(e.keyCode >= 35 && e.keyCode <= 40)) {
+					 // let it happen, don't do anything
+					 return;
+			}
+			// Ensure that it is a number and stop the keypress
+			if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) &&                 (e.keyCode < 96 || e.keyCode > 105)) {
+				e.preventDefault();
+			}
+		};
+
+		function unformateHHMM(e) {
+			$(this).val($(this).val().replace(':', ''));
+		}
+
+		function formateHHMM(e) {
+			var str  = $(this).val();
+			if (str.length > 2){
+				str = ('0'+ str).slice(-4);
+			}
+			else{
+				str = ('0'+str + '00').slice(-4);    
+			}
+			var mm = parseInt(str.substr(2, 2));
+			var hh = parseInt(str.slice(0,2));
+			if (mm > 59){
+				mm = mm-60;
+			}
+
+			if (hh > 23){
+				hh = hh % 24;
+			}
+			mm = ('0' + mm).slice(-2);
+			hh = ('0' + hh).slice(-2);
+			var formate = hh + ':' + mm;
+			$(this).val(formate);
+		}
+		
+		function convertToUTC(localTimeString) {
+			const localDate = new Date(localTimeString);
+			var year = localDate.getFullYear();
+			var month = localDate.getMonth();
+			var day = localDate.getDate();
+			var hour = localDate.getHours();
+			var minute = localDate.getMinutes();
+			var second = localDate.getSeconds();
+			var dataHoraUtc = new Date(Date.UTC(year, month - 1, day, hour, minute, second));
+			return dataHoraUtc;
+		}
+
+		// FunÃ§Ã£o para obter o valor de um cookie pelo nome
+		function validateToken() {
+			token = localStorage.getItem("jwtToken")
+			if (token) {
+				return true;
+			}
+			else{
+				window.location.href = "https://sghapi20230704112902.azurewebsites.net/home";
+				return false;
+			}
+
+		}
+
+		function limparFormulario() {
+			// Limpar os campos do formulário
+			$("#valor").val('');
+			$("#arquivo").val('');
+			$("#entrada1").val('');
+			$("#saida1").val('');
+			$("#entrada2").val('');
+			$("#saida2").val('');
+			$("#entrada3").val('');
+			$("#saida3").val('');
+			$("#descricaoObservacao").val('');
+			$("#horasTrabalhadasInput").val('');
+			
+			$("#setor").prop('selectedIndex', -1);
+			$("#atividade").prop('selectedIndex', -1);
+			$("#tipoDespesa").prop('selectedIndex', -1);
+			$("#centrodecusto").prop('selectedIndex', -1);
+
+			// Limpar a tabela de despesas
+			var tabelaDespesas = document.getElementById('tabelaDespesas');
+			tabelaDespesas.style.display = 'none';
+			var tbody = tabelaDespesas.getElementsByTagName('tbody')[0];
+			tbody.innerHTML = '';
+
+			// Exibir ou ocultar campos de saída 3 conforme necessário
+			exibirOcultarSaida3();
+		}
+		
+		function voltarParaIndex() {
+			// Redirecionar para "./index.html"
+			window.location.href = "./listagem_apontamentos.html";
+		}
+		
+		function formularioValido(){
+			var formValido = true;
+			$("form input").each(function() {
+				if ($(this).val().trim() === "" && $(this).prop("required")) {
+					formValido =  false;
+				}
+			});
+			
+			$("form select").each(function() {
+				if ((!$(this).val() ||  $(this).val().trim() === "-1") && $(this).prop("required")) {
+					formValido =  false;
+				}
+			});
+		
+			var tipoApontamento = document.querySelector('input[name="tipoApontamento"]:checked').value;
+			
+			if (tipoApontamento == 'horasTrabalhadas') {
+				if($("#horasTrabalhadasInput").val() == "" || ($("#horasTrabalhadasInput").val() > 24 && localStorage.getItem('maiorFunc') < 3)){
+					$("#horasTrabalhadasInput").addClass("required-field");
+					$("#horasTrabalhadasInput").on("change", function() {
+						if ($(this).val() && $(this).val().trim() != "") {
+							$(this).removeClass("required-field");
+						}
+					});
+					formValido =  false;
+					if($("#horasTrabalhadasInput").val() > 24){
+						alert("Não é possível apontar mais de 24h em um dia!");
+					}
+				}
+			} else{
+				var registros = construirListaRegistrosApontamento(data);
+				// Verifica se o conjunto de registros Ã© par
+				if (registros.length % 2 !== 0) {
+					alert("Horário de entrada registrado sem horário de saída!");
+					destacarCamposHorariosVazios(registros);
+					formValido =  false;
+				}
+				if (registros.length == 0) {
+					alert("Insira pelo menos um horário de Entrada e de Saída!");
+					destacarCamposHorariosVazios(registros);
+					formValido =  false;
+				}
+			}
+			if(!formValido){
+				alert("Por favor, preencha todos os campos obrigatórios.");
+				destacarCamposRequeridosVazios();
+			}
+				
+			return formValido;
+		}
+		
+		function destacarCamposHorariosVazios(registros) {
+			if (registros.length < 2) {
+				$(".recuo_horarios :input[required]").each(function() {
+					if ((!$(this).val() ||  $(this).val().trim() === "")) {
+						$(this).addClass("required-field");
+					}
+				});
+			}
+			else {
+				$(".recuo_horarios :input:visible").each(function() {
+					if ((!$(this).val() ||  $(this).val().trim() === "")) {
+						$(this).addClass("required-field");
+					}
+				});
+			}
+			
+			$(".required-field").on("change", function() {
+				if ($(this).val() && $(this).val().trim() != "") {
+					$(this).removeClass("required-field");
+				}
+			});
+		}
+		
+		function destacarCamposRequeridosVazios() {
+			$("form :input[required]").each(function() {
+				if (!$(this).val() || $(this).val().trim() === "") {
+					$(this).addClass("required-field");
+				}
+			});
+			
+			$("form select").each(function() {
+				if ((!$(this).val() ||  $(this).val() === "-1") && $(this).prop("required")) {
+					$(this).addClass("required-field");
+				}
+			});
+
+			$(".required-field").on("change", function() {
+				if ($(this).val() && $(this).val().trim() != "") {
+					$(this).removeClass("required-field");
+				}
+			});
+		}
+		
+	</script>
+</body>
+
+</html>

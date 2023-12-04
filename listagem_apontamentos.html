@@ -1,0 +1,370 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Lista de Apontamentos</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="icon" href="https://simatec.com.br/wp-content/uploads/2017/03/cropped-logotipo_Horizontal_Poli-32x32.png" sizes="32x32">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.css">
+    <style>
+        .btn-spacing {
+            margin-right: 5px;
+        }
+		.main-container {
+			margin-left: 20px;  /* Ajuste conforme necessário */
+			margin-right: 20px; /* Ajuste conforme necessário */
+		}
+		.coluna-observacao {
+			max-width: 250px;
+		}
+    </style>
+</head>
+<body>
+    <div class="text-white bg-primary p-3">
+        <h2>Listagem de Horas
+			<div class="float-end" style="font-size: 12px; color: lightgray;">
+                <i class="fa fa-user fa-1x"></i> 
+                <a id="nomeUsuario" href="#" style="padding-left: 4px;color: lightgray;">-</a>
+            </div>
+		</h2>
+    </div>
+
+    <!-- Área de filtragem -->
+	<div class="container mt-4 mb-4">
+		<div class="row">
+			<div class="col-md-3">
+				<label for="usuarioSelect">Funcionário</label>
+				<select class="form-control" id="usuarioSelect">
+					<!-- Opções de usuários serão carregadas aqui -->
+				</select>
+			</div>
+			<div class="col-md-3">
+				<label for="centroCustoSelect">Centro de Custo</label>
+				<select class="form-control" id="centroCustoSelect">
+					<option value=0>Todos</option>
+					<!-- Opções de centros de custo serão carregadas aqui -->
+				</select>
+			</div>
+			<div class="col-md-3">
+				<label for="dataInicio">Data Início</label>
+				<input type="text" id="dataInicio" class="datepicker form-control mb-2">
+			</div>
+			<div class="col-md-3">
+				<label for="dataFim">Data Fim</label>
+				<input type="text" id="dataFim" class="datepicker form-control mb-2">
+			</div>
+			<div class="col-md-2 d-flex align-items-end">
+				<button class="btn btn-primary" onclick="carregarApontamentos()">Filtrar</button>
+			</div>			
+		</div>
+	</div>
+	
+	<div class="d-flex container justify-content-end mb-3">
+
+		<button type="button" class="btn btn-primary" onclick="adicionarApontamento()">
+            <i class="fa fa-plus"></i> Adicionar
+        </button>
+&nbsp&nbsp&nbsp&nbsp
+				<img onclick="exportarParaExcel()" title="Exportar para Excel" src="https://cdn-icons-png.flaticon.com/512/732/732220.png" alt="Excel" style="height: 30px; width: 30px;">
+
+
+    </div>
+
+	<div class="main-container">
+		<table class="table">
+			<thead>
+				<tr>
+					<th>Nome do Funcionário</th>
+					<th>Data</th>
+					<th>Horas Trabalhadas</th>
+					<th>Setor</th>
+					<th>Atividade</th>
+					<th>Centro de Custo</th>
+					<th>Observação</th>
+
+					<th></th>
+				</tr>
+			</thead>
+			<tbody id="apontamento-list">
+				<!-- Linhas de apontamentos serão adicionadas aqui pelo JavaScript -->
+			</tbody>
+		</table>
+		
+		<div id="loading" style="display: none; text-align: center;">
+			 <img src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/0.16.1/images/loader-large.gif" alt="Carregando..." />
+		</div>
+		
+		<button type="button" class="btn btn-primary" onclick="voltarParaUsuarios()">Voltar</button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-1.9.1.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.2/xlsx.full.min.js"></script>
+
+    <script>
+	    var urlParams = new URLSearchParams(window.location.search);
+        var token = urlParams.get('token'); 
+        $(document).ready(function() {
+			if(validateToken()){
+				$('#nomeUsuario').text(localStorage.getItem('uname'));
+				carregarFiltroUsuarios();
+				definirDatasFiltro();
+				$('.datepicker').datepicker({
+					format: 'dd/mm/yyyy',
+					autoclose: true,
+					todayHighlight: true
+				});
+				$('#usuarioSelect').change(function() {
+					$('#centroCustoSelect').val(0);
+					carregarApontamentos();
+				});
+			}
+        });
+
+		 function carregarFiltroUsuarios() {
+            var maiorFunc = localStorage.getItem("maiorFunc");
+			if(maiorFunc > 2)
+				carregarUsuarios();
+			else
+				carregarUsuario();
+        }
+        function carregarUsuarios() {
+            $.ajax({
+                url: 'https://localhost:44349/api/usuario',
+                type: 'GET',
+                success: function(data) {
+                    var options = '';
+                    data.forEach(function(usuario) {
+                        options += '<option value="' + usuario.id + '">' + usuario.nome + '</option>';
+                    });
+                    $('#usuarioSelect').html(options);
+					$('#usuarioSelect').val(localStorage.getItem("uid"));
+
+					carregarApontamentos();
+                }
+            });
+        }
+		
+		function carregarUsuario() {
+			var idUsuario = localStorage.getItem('uid');
+            $.ajax({
+                url: 'https://localhost:44349/api/Usuario/' + idUsuario,
+                type: 'GET',
+                success: function(data) {
+					if(data) {
+						var options = '';
+						options += '<option value="' + data.id + '">' + data.nome + '</option>';
+						$('#usuarioSelect').html(options);
+						carregarApontamentos();
+					}
+                }
+            });
+        }
+
+        function carregarApontamentos() {
+            var userId = $('#usuarioSelect').val();
+            var inicio = formatDate($('#dataInicio').val());
+            var fim = formatDate($('#dataFim').val());
+			$('#apontamento-list').html('');
+			$('#loading').show();
+			
+            $.ajax({
+                url: `https://localhost:44349/api/apontamento/GetApontamentosPorUsuarioData?usuarioId=${userId}&inicio=${inicio}&fim=${fim}`,
+                type: 'GET',
+                success: function(data) {
+					if (data && data.length > 0) {
+						var centroCustoSelecionado = parseInt($('#centroCustoSelect').val());
+						var tabelaApontamentos = '';
+						data.forEach(function(apontamento) {
+							if (centroCustoSelecionado === 0 || apontamento.centroDeCusto.id === centroCustoSelecionado) {
+								tabelaApontamentos += '<tr>';
+								tabelaApontamentos += '<td>' + apontamento.funcionario.nome + '</td>';
+								tabelaApontamentos += '<td>' + formatDateToShow(apontamento.dataApontamento)  + '</td>';
+								tabelaApontamentos += '<td>' + apontamento.saldoHoras + '</td>';
+								tabelaApontamentos += '<td>' + apontamento.nomeSetor + '</td>';
+								tabelaApontamentos += '<td>' + apontamento.nomeAtividade + '</td>';
+								tabelaApontamentos += '<td>' + apontamento.centroDeCusto.nomeCentroDeCusto + '</td>';
+								tabelaApontamentos += '<td class="coluna-observacao">' + escapeHtml(apontamento.observacao) + '</td>';
+
+								
+								tabelaApontamentos += '<td>';
+								tabelaApontamentos += '<button class="btn btn-danger btn-sm btn-spacing" onclick="excluirApontamento('+ apontamento.id +')" data-toggle="tooltip" data-placement="top" title="Excluir"><i class="fas fa-trash-alt"></i></button>';
+						
+								tabelaApontamentos += '</td>';
+								tabelaApontamentos += '</tr>';
+							}
+						});
+
+						$('#apontamento-list').html(tabelaApontamentos);
+						// Carrega os centros de custo no filtro
+						var centrosCustoUnicos = data.map(function(apontamento) {
+							return { id: apontamento.centroDeCusto.id, nome: apontamento.centroDeCusto.nomeCentroDeCusto };
+						}).filter((centroCusto, index, self) =>
+							index === self.findIndex((t) => (
+								t.id === centroCusto.id
+							))
+						);
+						var optionsCentroCusto = '<option value=0>Todos</option>';
+						centrosCustoUnicos.forEach(function(centroCusto) {
+							optionsCentroCusto += '<option value="' + centroCusto.id + '">' + centroCusto.nome + '</option>';
+						});
+						$('#centroCustoSelect').html(optionsCentroCusto);
+						if (centroCustoSelecionado != 0){ 
+							$('#centroCustoSelect').html(optionsCentroCusto).val(centroCustoSelecionado);
+						}
+						
+					} else {
+						// Se não houver apontamentos, exiba a mensagem e esconda a tabela.
+						$('#apontamento-list').html(`
+							<tr>
+								<td colspan="4" class="text-center">
+									<div id="no-data-placeholder" class="text-center mt-4">
+										<h5>Nenhum apontamento para esse intervalo!</h5>
+									</div>
+								</td>
+							</tr>
+						`);
+					}
+					$('#loading').hide();
+                },
+				error: function(jqXHR, textStatus, errorThrown) {
+					console.error('Erro ao carregar apontamentos:', textStatus, errorThrown);
+					alert('Ocorreu um erro ao carregar os apontamentos. Por favor, tente novamente.');
+					$('#loading').hide();
+				}
+            });
+        }
+		
+		function editarApontamento(idApontamento) {
+			// Redirecione para a página de edição ou abra um modal, conforme sua implementação
+			window.location.href = `./edicao_apontamento.html?id=${idApontamento}`;
+		}
+		
+		function excluirApontamento(idApontamento) {
+			if(confirm("Tem certeza que deseja excluir este apontamento?")) {
+				$.ajax({
+					url: `https://localhost:44349/api/apontamento/${idApontamento}`,
+					type: 'DELETE',
+					success: function() {
+						alert("Apontamento excluído com sucesso!");
+						carregarApontamentos();
+					},
+					error: function(jqXHR, textStatus, errorThrown) {
+						alert(`Erro ao excluir apontamento. ${textStatus}: ${errorThrown}`);
+					}
+				});
+			}
+		}
+		
+		function adicionarApontamento() {
+            window.location.href = "./apontamento_horas.html";
+        }
+
+        function voltarParaUsuarios() {
+            window.location.href = "./index.html";
+        }
+		
+		function definirDatasFiltro() {
+			let dataAtual = new Date();
+			let inicio, fim;
+
+			<!-- if (dataAtual.getDate() >= 5) { -->
+				<!-- // Início no dia 5 do mês anterior e fim no dia 5 do mês atual -->
+				<!-- inicio = new Date(dataAtual.getFullYear(), dataAtual.getMonth() - 1, 5); -->
+				<!-- fim = new Date(dataAtual.getFullYear(), dataAtual.getMonth(), 5); -->
+			<!-- } else { -->
+				<!-- // Início no dia 5 de dois meses atrás e fim no dia 5 do mês anterior -->
+				<!-- inicio = new Date(dataAtual.getFullYear(), dataAtual.getMonth() - 2, 5); -->
+				<!-- fim = new Date(dataAtual.getFullYear(), dataAtual.getMonth() - 1, 5); -->
+			<!-- } -->
+			
+			inicio = new Date(dataAtual.getFullYear(), dataAtual.getMonth() - 1, 5);
+            fim = new Date(dataAtual.getFullYear(), dataAtual.getMonth() , 5);
+			
+			// Convertendo as datas para o formato dd/mm/yyyy
+			let inicioFormatado = `${inicio.getDate().toString().padStart(2, '0')}/${(inicio.getMonth() + 1).toString().padStart(2, '0')}/${inicio.getFullYear()}`;
+			let fimFormatado = `${fim.getDate().toString().padStart(2, '0')}/${(fim.getMonth() + 1).toString().padStart(2, '0')}/${fim.getFullYear()}`;
+
+			// Definindo as datas nos inputs
+			$('#dataInicio').val(inicioFormatado);
+			$('#dataFim').val(fimFormatado);
+		}
+		
+		function formatDate(dateStr) {
+			// Verifica se a data não é vazia ou nula
+			if (!dateStr) return "";
+			var dia  = dateStr.split("/")[0];
+			var mes  = dateStr.split("/")[1];
+			var ano  = dateStr.split("/")[2];
+
+			return `${ano}-${mes}-${dia}`;
+		}
+		
+		function formatDateToShow(dataString) {
+			var data = new Date(dataString);
+			var dia = ("0" + data.getDate()).slice(-2);
+			var mes = ("0" + (data.getMonth() + 1)).slice(-2);
+			var ano = data.getFullYear();
+			return `${dia}-${mes}-${ano}`;
+		}
+		
+		function validateToken() {
+			token = localStorage.getItem("jwtToken")
+			if (token) {
+				return true;
+			}
+			else{
+				window.location.href = "https://localhost:44349/home";
+				return false;
+			}
+		}
+		
+		function escapeHtml(text) {
+			return text
+				.replace(/&/g, "&amp;")
+				.replace(/</g, "&lt;")
+				.replace(/>/g, "&gt;")
+				.replace(/"/g, "&quot;")
+				.replace(/'/g, "&#039;");
+		}
+
+		function exportarParaExcel() {
+			var tabela = document.querySelector('.table').cloneNode(true);
+			
+			Array.from(tabela.rows).forEach(row => {
+				row.deleteCell(-1); // Remove a última célula de cada linha
+			});
+
+			// Processa cada linha da tabela para corrigir o formato da data
+			tabela.querySelectorAll('tbody tr').forEach(linha => {
+				var celulaData = linha.cells[1]; // A célula da data está na segunda coluna
+				var dataTexto = celulaData.textContent.trim();
+				celulaData.textContent = dataTexto.replace(/-/g, '/'); // Garante que o separador seja '/'
+			});
+
+			// Exporta a tabela para o livro do Excel
+			var workbook = XLSX.utils.table_to_book(tabela, { sheet: "Listagem", raw: true });
+			var ws = workbook.Sheets["Listagem"];
+			
+			ws['!cols'] = [
+				{ wch: 20 }, // Largura da coluna "Nome do Funcionário"
+				{ wch: 12 }, // Largura da coluna "Data"
+				{ wch: 10 }, // Largura da coluna "Horas Trabalhadas"
+				// ... Adicione mais objetos para colunas adicionais se necessário
+			];
+
+			// Define o tipo das células de data para texto
+			var range = XLSX.utils.decode_range(ws['!ref']);
+			for(var R = range.s.r; R <= range.e.r; ++R) {
+				// Supondo que a coluna de data seja a segunda coluna, B
+				var cell_ref = XLSX.utils.encode_cell({c: 1, r: R});
+				if(ws[cell_ref]) ws[cell_ref].z = '@'; // Define o formato de célula como texto
+			}
+
+			// Escreve o arquivo do Excel
+			XLSX.writeFile(workbook, 'listagem_de_horas.xlsx');
+		}
+    </script>
+</body>
+</html>

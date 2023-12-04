@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <title>Listagem de Centros de Custo</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .btn-spacing { margin-right: 5px; }
+        .main-container { margin: 20px; }
+    </style>
+</head>
+<body>
+    <div class="text-white bg-primary p-3">
+        <h2>Listagem de Centros de Custo
+            <div class="float-end" style="font-size: 12px; color: lightgray;">
+                <i class="fa fa-user"></i> 
+                <a id="nomeUsuario" href="#" style="padding-left: 4px;color: lightgray;">-</a>
+            </div>
+        </h2>
+    </div>
+
+    <!-- Área de filtragem -->
+    <div class="container mt-4 mb-4">
+        <div class="d-flex justify-content-end">
+        <button type="button" class="btn btn-primary" onclick="adicionarCentroDeCusto()">
+            <i class="fa fa-plus"></i> Adicionar
+        </button>
+    </div>
+    </div>
+
+    <div class="main-container">
+        <table class="table">
+			<thead>
+				<tr>
+					<th>Nome do Centro de Custo</th>
+					<th>Gerente</th>
+					<th>Cliente</th>
+					<th>Total de Horas Vendidas</th>
+					<th>Total de Horas Gastas</th>
+					<th>Ações</th>
+				</tr>
+			</thead>
+			<tbody id="centroDeCusto-list">
+				<!-- Linhas de centros de custo serão adicionadas aqui pelo JavaScript -->
+			</tbody>
+		</table>
+
+		<button type="button" class="btn btn-primary" onclick="voltar()">Voltar</button>
+        <div id="loading" style="display: none; text-align: center;">
+             <img src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/0.16.1/images/loader-large.gif" alt="Carregando..." />
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-1.9.1.js"></script>
+
+    <script>
+		var urlParams = new URLSearchParams(window.location.search);
+        var token = urlParams.get('token'); 
+        $(document).ready(function() {
+			if(validateToken()){
+				$('#nomeUsuario').text(localStorage.getItem('uname'));
+				carregarCentrosDeCusto();
+			}
+        });
+
+        function carregarCentrosDeCusto() {
+            $.ajax({
+				 url: 'https://localhost:44349/api/CentroDeCusto/GetListagemCentroDeCusto/',
+				type: 'GET',
+				success: function(data) {
+					var tabelaCentrosDeCusto = '';
+					data.forEach(function(centro) {
+						tabelaCentrosDeCusto += '<tr>';
+						tabelaCentrosDeCusto += '<td>' + centro.centroDeCusto.nomeCentroDeCusto + '</td>';
+						tabelaCentrosDeCusto += '<td>' + centro.nomeGerente + '</td>'; // Substitua pelo método correto para obter o nome do gerente
+						tabelaCentrosDeCusto += '<td>' + centro.centroDeCusto.cliente + '</td>';
+						tabelaCentrosDeCusto += '<td>' + centro.horasTotais + '</td>';
+						tabelaCentrosDeCusto += '<td>' + centro.horasTotaisApontadas + '</td>';
+						tabelaCentrosDeCusto += '<td>';
+						tabelaCentrosDeCusto += '<button class="btn btn-primary btn-sm btn-spacing" onclick="editarCentroDeCusto('+ centro.centroDeCusto.id +')"><i class="fa fa-edit"></i></button>';
+						tabelaCentrosDeCusto += '<button class="btn btn-danger btn-sm" onclick="excluirCentroDeCusto('+ centro.centroDeCusto.id +')"><i class="fa fa-trash"></i></button>';
+						tabelaCentrosDeCusto += '</td>';
+						tabelaCentrosDeCusto += '</tr>';
+					});
+					$('#centroDeCusto-list').html(tabelaCentrosDeCusto);
+				},
+				error: function(jqXHR, textStatus, errorThrown) {
+					alert('Erro ao carregar os centros de custo: ' + textStatus);
+				}
+			});
+        }
+
+        function editarCentroDeCusto(idCentroDeCusto) {
+             window.location.href = './cadastro_projetos.html?idCentroDeCusto=' + idCentroDeCusto;
+        }
+
+        function excluirCentroDeCusto(idCentroDeCusto) {
+            if(confirm("Tem certeza que deseja excluir este Projeto?")) {
+				$.ajax({
+					url: `https://localhost:44349/api/CentroDeCusto/${idCentroDeCusto}`,
+					type: 'DELETE',
+					success: function() {
+						alert("Projeto excluído com sucesso!");
+						carregarCentrosDeCusto();
+					},
+					error: function(jqXHR, textStatus, errorThrown) {
+						alert(`Erro ao excluir Projeto. ${textStatus}: ${errorThrown}`);
+					}
+				});
+			}
+        }
+		
+		function formatDateToShow(dataString) {
+			var data = new Date(dataString);
+			var dia = ("0" + data.getDate()).slice(-2);
+			var mes = ("0" + (data.getMonth() + 1)).slice(-2);
+			var ano = data.getFullYear();
+			return `${dia}-${mes}-${ano}`;
+		}
+		
+		function validateToken() {
+			token = localStorage.getItem("jwtToken")
+			if (token) {
+				return true;
+			}
+			else{
+				window.location.href = "https://localhost:44349/home";
+				return false;
+			}
+		}
+
+		function voltar() {
+            window.location.href = "./index.html";
+        }
+		
+		function adicionarCentroDeCusto() {
+            window.location.href = "./cadastro_projetos.html";
+        }
+		
+    </script>
+</body>
+</html>

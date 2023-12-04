@@ -1,0 +1,317 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Edição de Usuário</title>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="text-white bg-primary p-3" style="font-family: Arial, sans-serif;">
+        <h2 style="font-size: 24px; display: contents;">
+            Edição de Usuário
+            <div class="float-end" style="font-size: 12px; color: lightgray;">
+                <i class="fa fa-user fa-1x"></i> 
+                <a id="usuario" href="#" style="padding-left: 4px;color: lightgray;">Nome do Usuário</a>
+            </div>
+        </h2>
+    </div>
+    <div class="container">
+        <form class="recuo_form row">
+            <div class="col-sm-8">
+                <div class="mb-3 row">
+                    <label for="nome" class="form-label col-sm-4">Nome do Usuário:</label>
+                    <div class="col-sm-8">
+                        <input type="text" id="nomeUsuario" name="nomeUsuario" class="form-control" required>
+                    </div>
+                </div>
+                <div class="mb-3 row">
+                    <label for="email" class="form-label col-sm-4">Email do Usuário:</label>
+                    <div class="col-sm-8">
+                        <input type="email" id="emailUsuario" name="emailUsuario" class="form-control" required disabled>
+                    </div>
+                </div>
+                <div class="mb-3 row">
+                    <label for="funcao" class="form-label col-sm-4">Função:</label>
+                    <div class="col-sm-8">
+                        <select class="form-select" id="funcao" multiple required>
+                        </select>
+                    </div>
+                </div>
+                <div class="mb-3 row">
+                    <label for="setor" class="form-label col-sm-4">Setor:</label>
+                    <div class="col-sm-8">
+                        <select class="form-select" id="setor" multiple required>
+                        </select>
+                    </div>
+                </div>
+				<div class="mb-3 row">
+					<label for="valorHora" class="form-label col-sm-4">Valor da Hora:</label>
+					<div class="col-sm-8">
+						<input type="number" step="0.01" id="valorHora" name="valorHora" class="form-control" required>
+					</div>
+				</div>
+                <button type="button" class="btn btn-primary" onclick="salvarUsuario()">Salvar</button>
+				<button type="button" class="btn btn-primary" onclick="voltarParaLista()">Voltar</button>
+            </div>
+        </form>
+    </div>
+
+    <style>
+        .recuo_form {
+            padding: 50px 0 0 0;
+        }
+        .recuo_horarios {
+            padding: 2% 30% 5% 10%;
+            width: 100%;
+        }
+        .label_horarios {
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 0;
+        }
+        .center {
+            text-align: center;
+        }
+        .recuo_textareas {
+            margin-left: 20px;
+        }
+        .wrapper {
+            display: grid;
+            grid-template-columns: 1fr 3fr;
+            grid-gap: 20px; /* Espaçamento entre as colunas */
+        }
+        .titulo-colunas {
+            background-color: #f2f2f2 !important;
+        }
+        #tabelaAtividades thead tr {
+            background-color: #f2f2f2;
+        }
+        .col {
+            margin-bottom: 10px;
+            margin-right: 10px; /* Use a variável --distancia-campos para controlar a distância */
+        }
+        .input-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .table-wrapper {
+            max-height: 300px; /* ajuste o valor conforme necessário */
+            overflow-y: auto;
+        }
+        .required-field {
+            border: 1px solid red;
+            background-color: #ffe6e6;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script src="https://code.jquery.com/jquery-1.9.1.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+    <script>
+		var urlParams = new URLSearchParams(window.location.search);
+		var token = urlParams.get('token');
+		var idUsuarioSelecionado = 0;
+		var todosSetores = [];
+		var todasFuncoes = [];
+        $(document).ready(function() {
+			if(validateToken()){
+			    const urlParams = new URLSearchParams(window.location.search);
+				idUsuarioSelecionado = urlParams.get('id');
+				$('#funcao').select2();
+				$('#setor').select2();
+				carregarOpcoesSelect(idUsuarioSelecionado);
+				$('#usuario').text(localStorage.getItem('uname'));
+				
+				 //limparFormulario();
+			}
+        });
+		
+		function voltarParaIndex() {
+			// Redirecionar para "./index.html"
+			window.location.href = "./index.html";
+		}
+		
+		function carregarOpcoesSelect(idUsuarioSelecionado) {
+			$.ajax({
+				url: 'https://localhost:44349/api/Usuario/GetUsuarioViewModel/' + idUsuarioSelecionado,
+				type: 'GET',
+				success: function(data) {
+					var setorOptions = '';
+					data.setores.forEach(function(setor) {
+						setorOptions += '<option value="' + setor.id + '">' + setor.nome + '</option>';
+					});
+					$('#setor').html(setorOptions);
+					
+					var funcaoOptions = '';
+					data.funcoes.forEach(function(funcao) {
+						funcaoOptions += '<option value="' + funcao.id + '">' + funcao.nome + '</option>';
+					});
+					$('#funcao').html(funcaoOptions);
+					
+					todosSetores = data.setores;
+					todasFuncoes = data.funcoes;
+					
+					// Preencha os campos de nome, email e valorHora com os dados do usuário
+					if(data.usuario){
+						// Selecionar as opções correspondentes ao usuário
+						data.usuario.setores.forEach(function(setor) {
+							$('#setor option[value="' + setor.id + '"]').prop('selected', true);
+						});
+
+						data.usuario.funcoes.forEach(function(funcao) {
+							$('#funcao option[value="' + funcao.id + '"]').prop('selected', true);
+						});
+
+						// Atualize os selects após selecionar as opções
+						$('#setor').trigger('change');
+						$('#funcao').trigger('change');
+						
+						$('#nomeUsuario').val(data.usuario.nome);
+						$('#emailUsuario').val(data.usuario.email);
+						$('#valorHora').val(data.usuario.valorHora);
+					}
+				}
+			});
+		}
+		
+		function salvarUsuario() {
+			// Recuperar os dados do formulÃ¡rio
+			var nome = $(nomeUsuario).val();
+			var funcoesSelecionadas = obterFuncoesSelecionadas();
+			var setoresSelecionados = obterSetoresSelecionados();
+			var valorHora =  $("#valorHora").val();
+			
+			if(!formularioValido()){
+				alert("Informações inválidas!");
+				return;
+			}
+			
+			var usuario = {
+				Id: parseInt(idUsuarioSelecionado),
+				Nome: nome,
+				Funcoes: funcoesSelecionadas,
+				Setores: setoresSelecionados,
+				ValorHora: parseFloat(valorHora)
+			};
+			
+			// Enviar os dados para o backend
+			enviarDadosParaBackend(usuario);
+		}
+		
+		function enviarDadosParaBackend(usuario) {
+		
+			// Enviar uma solicitação HTTP POST para o backend
+			fetch('https://localhost:44349/api/Usuario', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify(usuario)
+			})
+			.then(response => response.json())
+			.then(data => {
+				// Tratar a resposta do backend, se necessário
+				console.log(data);
+				// Redirecionar ou exibir uma mensagem de sucesso, por exemplo
+				alert('Usuário atualizado com sucesso!');
+				voltarParaLista();
+			})
+			.catch(error => {
+				// Tratar erros de requisição ou do backend, se necessário
+				console.error(error);
+				// Exibir uma mensagem de erro, por exemplo
+				alert('Ocorreu um erro ao salvar o Usuário. Por favor, tente novamente mais tarde.');
+			});
+		}
+		
+		function obterFuncoesSelecionadas() {
+			var funcoesSelecionadas = [];
+			var idsFuncoesSelecionadas = $('#funcao').val();
+			
+			if(idsFuncoesSelecionadas){
+				funcoesSelecionadas = todasFuncoes.filter(function(funcao) {
+					return idsFuncoesSelecionadas.includes(funcao.id.toString());
+				});
+				
+				return funcoesSelecionadas;
+			}
+			else
+				return null;
+		}
+		
+		function obterSetoresSelecionados() {
+			var setoresSelecionados = [];
+			var idsSetoresSelecionados = $('#setor').val();
+			
+			if(idsSetoresSelecionados){			
+				setoresSelecionados = todosSetores.filter(function(setor) {
+					return idsSetoresSelecionados.includes(setor.id.toString());
+				});
+				
+				return setoresSelecionados;
+			
+			}
+			else
+				return null;
+		}
+		
+		function formularioValido(){
+			var formValido = true;
+			$("form input").each(function() {
+				if ($(this).val().trim() === "" && $(this).prop("required")) {
+					formValido =  false;
+				}
+			});
+			
+			$("form select").each(function() {
+				if ((!$(this).val()) && $(this).prop("required")) {
+					formValido =  false;
+				}
+			});
+			if(!formValido){
+				alert("Por favor, preencha todos os campos obrigatórios.");
+				destacarCamposRequeridosVazios();
+			}
+			
+			return formValido;
+		}
+		
+		function destacarCamposRequeridosVazios() {
+			$("form :input[required]").each(function() {
+				if (!$(this).val() || ($(this).is('input:text') && $(this).val().trim() === "") || ($(this).is('select') && $(this).val().length < 1)) {
+					if($(this).is('select')) 
+						$(this).next(".select2-container").addClass("required-field");			
+					$(this).addClass("required-field");
+				}
+			});
+
+			$(".required-field").on("change", function() {
+				if ($(this).val()) {
+					if($(this).is('select')) 
+						$(this).next(".select2-container").removeClass("required-field");
+					$(this).removeClass("required-field");
+				}
+			});
+		}
+
+		function validateToken() {
+			token = localStorage.getItem("jwtToken");
+			var maiorFunc = localStorage.getItem("maiorFunc");
+			if (token) {
+				return true;
+			}
+			else{
+				window.location.href = "https://localhost:44349/home";
+				return false;
+			}
+
+		}
+		
+		function voltarParaLista() {
+			window.location.href = "./listagem_usuarios.html";
+		}
+	 </script>
+</body>
+</html>
