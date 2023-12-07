@@ -131,7 +131,7 @@
         }
         function carregarUsuarios() {
             $.ajax({
-                url: 'https://localhost:44349/api/usuario',
+                url: 'https://sghapi20230704112902.azurewebsites.net/api/usuario',
                 type: 'GET',
                 success: function(data) {
                     var options = '';
@@ -149,7 +149,7 @@
 		function carregarUsuario() {
 			var idUsuario = localStorage.getItem('uid');
             $.ajax({
-                url: 'https://localhost:44349/api/Usuario/' + idUsuario,
+                url: 'https://sghapi20230704112902.azurewebsites.net/api/Usuario/' + idUsuario,
                 type: 'GET',
                 success: function(data) {
 					if(data) {
@@ -170,7 +170,7 @@
 			$('#loading').show();
 			
             $.ajax({
-                url: `https://localhost:44349/api/apontamento/GetApontamentosPorUsuarioData?usuarioId=${userId}&inicio=${inicio}&fim=${fim}`,
+                url: `https://sghapi20230704112902.azurewebsites.net/api/apontamento/GetApontamentosPorUsuarioData?usuarioId=${userId}&inicio=${inicio}&fim=${fim}`,
                 type: 'GET',
                 success: function(data) {
 					if (data && data.length > 0) {
@@ -244,7 +244,7 @@
 		function excluirApontamento(idApontamento) {
 			if(confirm("Tem certeza que deseja excluir este apontamento?")) {
 				$.ajax({
-					url: `https://localhost:44349/api/apontamento/${idApontamento}`,
+					url: `https://sghapi20230704112902.azurewebsites.net/api/apontamento/${idApontamento}`,
 					type: 'DELETE',
 					success: function() {
 						alert("Apontamento excluído com sucesso!");
@@ -305,7 +305,7 @@
 				return true;
 			}
 			else{
-				window.location.href = "https://localhost:44349/home";
+				window.location.href = "https://sghapi20230704112902.azurewebsites.net/home";
 				return false;
 			}
 		}
