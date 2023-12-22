@@ -44,7 +44,13 @@
     <script>
         var urlParams = new URLSearchParams(window.location.search);
         var token = urlParams.get('token');     
+		var baseUrl;
         $(document).ready(function() {
+			if (window.location.hostname === "localhost") {
+				baseUrl = "https://localhost:44349/";
+			} else {
+				baseUrl = "https://sghapi20230704112902.azurewebsites.net/";
+			}
 			if(validateToken()){
 				$('#nomeUsuario').text(localStorage.getItem('uname'));
 				carregarUsuarios();
@@ -53,7 +59,7 @@
 
         function carregarUsuarios() {
             $.ajax({
-                url: 'https://localhost:44349/api/usuario',
+                url: baseUrl + 'api/usuario',
                 type: 'GET',
                 success: function(data) {
                     var tabelaUsuarios = '';
@@ -88,7 +94,7 @@
 				return true;
 			}
 			else{
-				window.location.href = "https://localhost:44349/home";
+				window.location.href = baseUrl + "home";
 				return false;
 			}
 

@@ -115,7 +115,15 @@
 		var idUsuarioSelecionado = 0;
 		var todosSetores = [];
 		var todasFuncoes = [];
+		var baseUrl;		
+		
         $(document).ready(function() {
+			if (window.location.hostname === "localhost") {
+				baseUrl = "https://localhost:44349/";
+			} else {
+				baseUrl = "https://sghapi20230704112902.azurewebsites.net/";
+			}
+			
 			if(validateToken()){
 			    const urlParams = new URLSearchParams(window.location.search);
 				idUsuarioSelecionado = urlParams.get('id');
@@ -135,7 +143,7 @@
 		
 		function carregarOpcoesSelect(idUsuarioSelecionado) {
 			$.ajax({
-				url: 'https://localhost:44349/api/Usuario/GetUsuarioViewModel/' + idUsuarioSelecionado,
+				url: baseUrl + 'api/Usuario/GetUsuarioViewModel/' + idUsuarioSelecionado,
 				type: 'GET',
 				success: function(data) {
 					var setorOptions = '';
@@ -203,7 +211,7 @@
 		function enviarDadosParaBackend(usuario) {
 		
 			// Enviar uma solicitação HTTP POST para o backend
-			fetch('https://localhost:44349/api/Usuario', {
+			fetch(baseUrl + 'api/Usuario', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json'
@@ -303,7 +311,7 @@
 				return true;
 			}
 			else{
-				window.location.href = "https://localhost:44349/home";
+				window.location.href = baseUrl + "home";
 				return false;
 			}
 

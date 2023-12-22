@@ -216,8 +216,15 @@
 	<script>
 		var urlParams = new URLSearchParams(window.location.search);
         var token = urlParams.get('token');
-
+		var baseUrl;
+		
 		$(document).ready(function() {
+			if (window.location.hostname === "localhost") {
+				baseUrl = "https://localhost:44349/";
+			} else {
+				baseUrl = "https://sghapi20230704112902.azurewebsites.net/";
+			}
+			
 			if(validateToken()){
 				var nomeUsuario = urlParams.get('name');
 				$('#nomeUsuario').text(nomeUsuario);
@@ -249,7 +256,7 @@
 			}
 			else{
 				
-				window.location.href = "https://localhost:44349/home";
+				window.location.href = baseUrl + "home";
 			}
 		}
 		

@@ -292,8 +292,15 @@
 		var todosCentrosDeCusto = [];
 		var despesasInseridas = [];
 		var uid = "";
+		var baseUrl;
 		
         $(document).ready(function() {
+			if (window.location.hostname === "localhost") {
+				baseUrl = "https://localhost:44349/";
+			} else {
+				baseUrl = "https://sghapi20230704112902.azurewebsites.net/";
+			}
+			
 			if(validateToken()){
 				uid = localStorage.getItem('uid');
 				$("#nome").val(localStorage.getItem('uname'));
@@ -428,7 +435,7 @@
 		
 		function carregarOpcoesSelect() {
 			$.ajax({
-				url: 'https://sghapi20230704112902.azurewebsites.net/api/Apontamento/GetApontamentoViewModel',
+				url: baseUrl + 'api/Apontamento/GetApontamentoViewModel',
 				data: { usuarioId: uid },
 				type: 'GET',
 				headers: {
@@ -492,7 +499,7 @@
 
 		// FunÃ§Ã£o para fazer a requisiÃ§Ã£o HTTP GET para obter os centros de custo
 		function obterCentrosDeCusto() {
-			fetch('https://sghapi20230704112902.azurewebsites.net/api/CentroDeCusto/GetCentrosDeCusto') // Substitua 'URL_DO_BACKEND' pela URL real do seu backend que retorna os centros de custo em formato JSON
+			fetch(baseUrl + 'api/CentroDeCusto/GetCentrosDeCusto') // Substitua 'URL_DO_BACKEND' pela URL real do seu backend que retorna os centros de custo em formato JSON
 				.then((response) => response.json())
 				.then((data) => {
 					preencherCentrosDeCusto(data); // Chama a funÃ§Ã£o para preencher o select com os dados retornados do backend
@@ -572,7 +579,7 @@
 			
 		
 			// Enviar uma solicitaÃ§Ã£o HTTP POST para o backend
-			fetch('https://sghapi20230704112902.azurewebsites.net/api/Apontamento', {
+			fetch(baseUrl + 'api/Apontamento', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
@@ -705,7 +712,7 @@
 				return true;
 			}
 			else{
-				window.location.href = "https://sghapi20230704112902.azurewebsites.net/home";
+				window.location.href = "home";
 				return false;
 			}
 

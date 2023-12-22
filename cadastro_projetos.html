@@ -319,7 +319,14 @@
 		var todosSetores = [];
 		var urlParams = new URLSearchParams(window.location.search);
 		var token = urlParams.get('token');
+		var baseUrl;
         $(document).ready(function() {
+			if (window.location.hostname === "localhost") {
+				baseUrl = "https://localhost:44349/";
+			} else {
+				baseUrl = "https://sghapi20230704112902.azurewebsites.net/";
+			}
+			
 			if(validateToken()){
 				$('#nomeUsuario').text(localStorage.getItem('uname'));
 				$("input[name^='data']").datepicker({
@@ -348,7 +355,7 @@
 		
 		function carregarOpcoesSelect(idCentroDeCusto) {
 			$.ajax({
-				url: 'https://sghapi20230704112902.azurewebsites.net/api/CentroDeCusto/GetCentroDeCustosViewModel',
+				url: baseUrl + 'api/CentroDeCusto/GetCentroDeCustosViewModel',
 				type: 'GET',
 				data: { idCentroDeCusto: idCentroDeCusto },
 				success: function(data) {
@@ -600,7 +607,7 @@
 		function enviarDadosParaBackend(centroCusto) {
 		
 			// Enviar uma solicitação HTTP POST para o backend
-			fetch('https://sghapi20230704112902.azurewebsites.net/api/CentroDeCusto', {
+			fetch(baseUrl + 'api/CentroDeCusto', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json'
@@ -747,7 +754,7 @@
 				return true;
 			}
 			else{
-				window.location.href = "https://sghapi20230704112902.azurewebsites.net/home";
+				window.location.href = baseUrl + "home";
 				return false;
 			}
 

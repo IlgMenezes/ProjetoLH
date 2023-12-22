@@ -6,8 +6,21 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        .btn-spacing { margin-right: 5px; }
-        .main-container { margin: 20px; }
+			html, body {
+    height: 100%; /* Garante que o html e o body ocupem toda a altura da janela do navegador */
+}
+
+        .btn-spacing { 
+					margin-right: 5px;
+				 }
+				.btn-voltar{
+					margin-top: 20px;
+				}
+        .main-container { margin: 20px; max-height: 70%;}
+				.scrollable-table {
+						overflow-y: auto; /* Habilita rolagem vertical se necessário */
+						max-height: 63vh; /* Altura máxima do contêiner, ajuste conforme necessário */
+				}
     </style>
 </head>
 <body>
@@ -30,26 +43,27 @@
     </div>
 
     <div class="main-container">
+			<div class="scrollable-table">
         <table class="table">
-			<thead>
-				<tr>
-					<th>Nome do Centro de Custo</th>
-					<th>Gerente</th>
-					<th>Cliente</th>
-					<th>Total de Horas Vendidas</th>
-					<th>Total de Horas Gastas</th>
-					<th>Ações</th>
-				</tr>
-			</thead>
-			<tbody id="centroDeCusto-list">
-				<!-- Linhas de centros de custo serão adicionadas aqui pelo JavaScript -->
-			</tbody>
-		</table>
-
-		<button type="button" class="btn btn-primary" onclick="voltar()">Voltar</button>
-        <div id="loading" style="display: none; text-align: center;">
-             <img src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/0.16.1/images/loader-large.gif" alt="Carregando..." />
-        </div>
+					<thead>
+						<tr>
+							<th>Nome do Centro de Custo</th>
+							<th>Gerente</th>
+							<th>Cliente</th>
+							<th>Total de Horas Vendidas</th>
+							<th>Total de Horas Gastas</th>
+							<th>Ações</th>
+						</tr>
+					</thead>
+					<tbody id="centroDeCusto-list">
+						<!-- Linhas de centros de custo serão adicionadas aqui pelo JavaScript -->
+					</tbody>
+				</table>
+			</div>
+			<button type="button" class="btn btn-primary btn-voltar" onclick="voltar()">Voltar</button>
+			<div id="loading" style="display: none; text-align: center;">
+						<img src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/0.16.1/images/loader-large.gif" alt="Carregando..." />
+			</div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -58,38 +72,47 @@
     <script>
 		var urlParams = new URLSearchParams(window.location.search);
         var token = urlParams.get('token'); 
+				var baseUrl;
+
         $(document).ready(function() {
-			if(validateToken()){
-				$('#nomeUsuario').text(localStorage.getItem('uname'));
-				carregarCentrosDeCusto();
-			}
+					if (window.location.hostname.includes("localhost")) {
+							baseUrl = "https://localhost:44349/";
+					} else {
+							baseUrl = "https://sghapi20230704112902.azurewebsites.net/";
+					}
+
+					if(validateToken()){
+						$('#nomeUsuario').text(localStorage.getItem('uname'));
+						carregarCentrosDeCusto();
+					}
+
         });
 
         function carregarCentrosDeCusto() {
             $.ajax({
-				 url: 'https://localhost:44349/api/CentroDeCusto/GetListagemCentroDeCusto/',
-				type: 'GET',
-				success: function(data) {
-					var tabelaCentrosDeCusto = '';
-					data.forEach(function(centro) {
-						tabelaCentrosDeCusto += '<tr>';
-						tabelaCentrosDeCusto += '<td>' + centro.centroDeCusto.nomeCentroDeCusto + '</td>';
-						tabelaCentrosDeCusto += '<td>' + centro.nomeGerente + '</td>'; // Substitua pelo método correto para obter o nome do gerente
-						tabelaCentrosDeCusto += '<td>' + centro.centroDeCusto.cliente + '</td>';
-						tabelaCentrosDeCusto += '<td>' + centro.horasTotais + '</td>';
-						tabelaCentrosDeCusto += '<td>' + centro.horasTotaisApontadas + '</td>';
-						tabelaCentrosDeCusto += '<td>';
-						tabelaCentrosDeCusto += '<button class="btn btn-primary btn-sm btn-spacing" onclick="editarCentroDeCusto('+ centro.centroDeCusto.id +')"><i class="fa fa-edit"></i></button>';
-						tabelaCentrosDeCusto += '<button class="btn btn-danger btn-sm" onclick="excluirCentroDeCusto('+ centro.centroDeCusto.id +')"><i class="fa fa-trash"></i></button>';
-						tabelaCentrosDeCusto += '</td>';
-						tabelaCentrosDeCusto += '</tr>';
+							url: baseUrl + 'api/CentroDeCusto/GetListagemCentroDeCusto/',
+							type: 'GET',
+						success: function(data) {
+							var tabelaCentrosDeCusto = '';
+							data.forEach(function(centro) {
+								tabelaCentrosDeCusto += '<tr>';
+								tabelaCentrosDeCusto += '<td>' + centro.centroDeCusto.nomeCentroDeCusto + '</td>';
+								tabelaCentrosDeCusto += '<td>' + centro.nomeGerente + '</td>'; // Substitua pelo método correto para obter o nome do gerente
+								tabelaCentrosDeCusto += '<td>' + centro.centroDeCusto.cliente + '</td>';
+								tabelaCentrosDeCusto += '<td>' + centro.horasTotais + '</td>';
+								tabelaCentrosDeCusto += '<td>' + centro.horasTotaisApontadas + '</td>';
+								tabelaCentrosDeCusto += '<td>';
+								tabelaCentrosDeCusto += '<button class="btn btn-primary btn-sm btn-spacing" onclick="editarCentroDeCusto('+ centro.centroDeCusto.id +')"><i class="fa fa-edit"></i></button>';
+								tabelaCentrosDeCusto += '<button class="btn btn-danger btn-sm" onclick="excluirCentroDeCusto('+ centro.centroDeCusto.id +')"><i class="fa fa-trash"></i></button>';
+								tabelaCentrosDeCusto += '</td>';
+								tabelaCentrosDeCusto += '</tr>';
+							});
+							$('#centroDeCusto-list').html(tabelaCentrosDeCusto);
+						},
+						error: function(jqXHR, textStatus, errorThrown) {
+							alert('Erro ao carregar os centros de custo: ' + textStatus);
+						}
 					});
-					$('#centroDeCusto-list').html(tabelaCentrosDeCusto);
-				},
-				error: function(jqXHR, textStatus, errorThrown) {
-					alert('Erro ao carregar os centros de custo: ' + textStatus);
-				}
-			});
         }
 
         function editarCentroDeCusto(idCentroDeCusto) {
@@ -99,7 +122,7 @@
         function excluirCentroDeCusto(idCentroDeCusto) {
             if(confirm("Tem certeza que deseja excluir este Projeto?")) {
 				$.ajax({
-					url: `https://localhost:44349/api/CentroDeCusto/${idCentroDeCusto}`,
+					url: baseUrl + `api/CentroDeCusto/${idCentroDeCusto}`,
 					type: 'DELETE',
 					success: function() {
 						alert("Projeto excluído com sucesso!");
@@ -126,7 +149,7 @@
 				return true;
 			}
 			else{
-				window.location.href = "https://localhost:44349/home";
+				window.location.href = baseUrl + "home";
 				return false;
 			}
 		}
