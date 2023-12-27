@@ -498,7 +498,7 @@
 			$("#descricaoObservacao").val(apontamento.observacao);
 			$("#horasTrabalhadasInput").val(apontamento.horasTrabalhadas);
 			
-			if (apontamento.registros) {
+			if (apontamento.registros && apontamento.registros.length > 1) {
 				$("#horasTrabalhadasRadio").prop("checked", false).trigger("change");
 				$("#entradaSaidaRadio").prop("checked", true).trigger("change");
 				$("#entrada1").val(apontamento.registros[0].dataHora.split('T')[1].substring(0, 5));
@@ -525,8 +525,6 @@
 					celulaValor.innerHTML = despesa.valor;
 				});
 			}
-
-			exibirOcultarSaida3();
 		}
 		
 		function filtrarAtividades(){
