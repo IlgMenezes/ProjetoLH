@@ -214,8 +214,8 @@
 			</div>
 			<div class="row">
 				<div class="col-sm-10">
-					<button tabindex="14" type="button" class="btn btn-primary" onclick="salvarApontamento()">Salvar</button>
-					<button tabindex="15" type="button" class="btn btn-primary" onclick="voltarParaIndex()">Voltar</button>
+					<button id="btnSalvar" tabindex="14" type="button" class="btn btn-primary" onclick="salvarApontamento()">Salvar</button>
+					<button id="btnVoltar" tabindex="15" type="button" class="btn btn-primary" onclick="voltarParaIndex()">Voltar</button>
 				</div>
 			</div>
 		</form>
@@ -592,6 +592,7 @@
 		}
 		
 		function salvarApontamento() {
+			$("#btnSalvar").attr("disabled", "disabled");
 			// Recuperar os dados do formulÃ¡rio
 			var data = formatDate($("#data").val());
 			var atividade = obterAtividadeSelecionada();
@@ -610,6 +611,7 @@
 			}
 			
 			if(!formularioValido()){
+				$("#btnSalvar").removeAttr("disabled");
 				return;
 			}
 			
@@ -633,9 +635,7 @@
 		}
 		
 		function enviarDadosParaBackend(apontamento) {
-		
-			
-		
+
 			// Enviar uma solicitaÃ§Ã£o HTTP POST para o backend
 			fetch(baseUrl + 'api/Apontamento', {
 				method: 'POST',
@@ -651,11 +651,13 @@
 				console.log(data);
 				// Redirecionar ou exibir uma mensagem de sucesso, por exemplo
 				alert('Apontamento salvo com sucesso!');
+				$("#btnSalvar").removeAttr("disabled");
 				limparFormulario();
 			})
 			.catch(error => {
 				// Tratar erros de requisiÃ§Ã£o ou do backend, se necessÃ¡rio
 				console.error(error);
+				$("#btnSalvar").removeAttr("disabled");
 				// Exibir uma mensagem de erro, por exemplo
 				alert('Ocorreu um erro ao salvar o centro de custo. Por favor, tente novamente mais tarde.');
 			});
