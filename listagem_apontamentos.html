@@ -197,8 +197,8 @@
 
 								
 								tabelaApontamentos += '<td>';
+								tabelaApontamentos += '<button class="btn btn-primary btn-sm btn-spacing" onclick="editarApontamento('+ apontamento.id +')"><i class="fa fa-edit"></i></button>';	
 								tabelaApontamentos += '<button class="btn btn-danger btn-sm btn-spacing" onclick="excluirApontamento('+ apontamento.id +')" data-toggle="tooltip" data-placement="top" title="Excluir"><i class="fas fa-trash-alt"></i></button>';
-						
 								tabelaApontamentos += '</td>';
 								tabelaApontamentos += '</tr>';
 							}
@@ -246,7 +246,7 @@
 		
 		function editarApontamento(idApontamento) {
 			// Redirecione para a página de edição ou abra um modal, conforme sua implementação
-			window.location.href = `./edicao_apontamento.html?id=${idApontamento}`;
+			window.location.href = `./apontamento_horas.html?apontamentoId=${idApontamento}`;
 		}
 		
 		function excluirApontamento(idApontamento) {
