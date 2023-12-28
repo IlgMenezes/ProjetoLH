@@ -371,16 +371,20 @@
 		function configurarRadioHoras() {
 			$('input[name="tipoApontamento"]').change(function() {
 			  if ($(this).val() === 'horasTrabalhadas') {
-				$('#horasTrabalhadasDiv').show();
-				$('#entradaSaidaDiv').hide();
+					$('#horasTrabalhadasDiv').show();
+					$('#entradaSaidaDiv').hide();
 			  } else {
-				$('#horasTrabalhadasDiv').hide();
-				$('#entradaSaidaDiv').show();
+					$('#horasTrabalhadasDiv').hide();
+					$('#entradaSaidaDiv').show();
 			  }
 			});
-
 			// Disparar o evento change no carregamento da página para garantir que a visibilidade correta seja aplicada
 			$('#horasTrabalhadasRadio').trigger('change');
+
+			if(localStorage.getItem('maiorFunc') < 3){
+				$('#horasTrabalhadasRadio').attr('disabled', true);
+				$("#entradaSaidaRadio").prop("checked", true).trigger("change");
+			}
 		}
 		function carregarDespesa() {
 			// Obter os valores dos campos do formulÃ¡rio
