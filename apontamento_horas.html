@@ -301,7 +301,7 @@
 		var uid = "";
 		var baseUrl;
 		
-        $(document).ready(function() {
+    $(document).ready(function() {
 			if (window.location.hostname === "localhost") {
 				baseUrl = "https://localhost:44349/";
 			} else {
@@ -347,7 +347,7 @@
 				filtrarAtividades();
 				limparFormulario();
 			}
-        });
+    });
 
 		function exibirSaida3() {
 			$('#entrada3').parent().parent().show();
@@ -501,6 +501,7 @@
 			$("#atividade").val(apontamento.atividade.id).trigger('change');
 			$("#descricaoObservacao").val(apontamento.observacao);
 			$("#horasTrabalhadasInput").val(apontamento.horasTrabalhadas);
+			uid = apontamento.funcionario.id;
 			
 			if (apontamento.registros && apontamento.registros.length > 1) {
 				$("#horasTrabalhadasRadio").prop("checked", false).trigger("change");
@@ -517,7 +518,7 @@
 				}
 			}
 			
-			if (apontamento.despesas) {
+			if (apontamento.despesas && apontamento.despesas.length > 0) {
 				var tabelaDespesas = document.getElementById('tabelaDespesas');
 				tabelaDespesas.style.display = 'table';
 				var tbody = tabelaDespesas.getElementsByTagName('tbody')[0];
