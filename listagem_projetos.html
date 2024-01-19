@@ -7,20 +7,29 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
 			html, body {
-    height: 100%; /* Garante que o html e o body ocupem toda a altura da janela do navegador */
-}
-
-        .btn-spacing { 
-					margin-right: 5px;
-				 }
-				.btn-voltar{
-					margin-top: 20px;
+				height: 100%; /* Garante que o html e o body ocupem toda a altura da janela do navegador */
+			}
+			.btn-spacing { 
+				margin-right: 5px;
 				}
-        .main-container { margin: 20px; max-height: 70%;}
-				.scrollable-table {
-						overflow-y: auto; /* Habilita rolagem vertical se necessário */
-						max-height: 63vh; /* Altura máxima do contêiner, ajuste conforme necessário */
-				}
+			.btn-voltar{
+				margin-top: 20px;
+			}
+			.main-container { margin: 20px; max-height: 70%;}
+			.scrollable-table {
+					overflow-y: auto; /* Habilita rolagem vertical se necessário */
+					max-height: 63vh; /* Altura máxima do contêiner, ajuste conforme necessário */
+			}
+			.scrollable-table table {
+					width: 100%;
+					border-collapse: collapse;
+			}
+			.scrollable-table thead th {
+					position: sticky;
+					top: 0;
+					background-color: white; /* ou a cor de fundo que desejar */
+					z-index: 1;
+			}
     </style>
 </head>
 <body>
@@ -100,7 +109,7 @@
 								tabelaCentrosDeCusto += '<td>' + centro.nomeGerente + '</td>'; // Substitua pelo método correto para obter o nome do gerente
 								tabelaCentrosDeCusto += '<td>' + centro.centroDeCusto.cliente + '</td>';
 								tabelaCentrosDeCusto += '<td>' + centro.horasTotais + '</td>';
-								tabelaCentrosDeCusto += '<td>' + centro.horasTotaisApontadas + '</td>';
+								tabelaCentrosDeCusto += '<td>' + centro.horasTotaisApontadas.toFixed(2) + '</td>';
 								tabelaCentrosDeCusto += '<td>';
 								tabelaCentrosDeCusto += '<button class="btn btn-primary btn-sm btn-spacing" onclick="editarCentroDeCusto('+ centro.centroDeCusto.id +')"><i class="fa fa-edit"></i></button>';
 								tabelaCentrosDeCusto += '<button class="btn btn-danger btn-sm" onclick="excluirCentroDeCusto('+ centro.centroDeCusto.id +')"><i class="fa fa-trash"></i></button>';
