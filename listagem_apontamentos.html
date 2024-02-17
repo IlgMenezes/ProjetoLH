@@ -169,7 +169,7 @@
 			}
 		});
     
-		
+
 		function carregarFiltroUsuarios() {
 			var maiorFunc = localStorage.getItem("maiorFunc");
 			if(maiorFunc > 2){
@@ -216,86 +216,86 @@
         }
 
         function carregarApontamentos() {
-            var userId = $('#usuarioSelect').val();
-            var inicio = formatDate($('#dataInicio').val());
-            var fim = formatDate($('#dataFim').val());
-			$('#apontamento-list').html('');
-			$('#loading').show();
-			
-            $.ajax({
-                url: baseUrl + `api/apontamento/GetApontamentosPorUsuarioData?usuarioId=${userId}&inicio=${inicio}&fim=${fim}`,
-                type: 'GET',
-                success: function(data) {
-					if (data && data.length > 0) {
-						var centroCustoSelecionado = parseInt($('#centroCustoSelect').val());
-						var tabelaApontamentos = '';
-						totalHoras = 0;
+					var userId = $('#usuarioSelect').val();
+					var inicio = formatDate($('#dataInicio').val());
+					var fim = formatDate($('#dataFim').val());
+					$('#apontamento-list').html('');
+					$('#loading').show();
+		
+					$.ajax({
+							url: baseUrl + `api/apontamento/GetApontamentosPorUsuarioData?usuarioId=${userId}&inicio=${inicio}&fim=${fim}`,
+							type: 'GET',
+							success: function(data) {
+						if (data && data.length > 0) {
+							var centroCustoSelecionado = parseInt($('#centroCustoSelect').val());
+							var tabelaApontamentos = '';
+							totalHoras = 0;
 
-						data.forEach(function(apontamento) {
-							if (centroCustoSelecionado === 0 || apontamento.centroDeCusto.id === centroCustoSelecionado) {
-								tabelaApontamentos += '<tr>';
-								tabelaApontamentos += '<td>' + apontamento.funcionario.nome + '</td>';
-								tabelaApontamentos += '<td class="coluna-data">' + formatDateToShow(apontamento.dataApontamento)  + '</td>';
-								tabelaApontamentos += '<td class="coluna-horas-trabalhadas">' + apontamento.saldoHoras + '</td>';
-								totalHoras += apontamento.valorSaldoHoras;
-								tabelaApontamentos += '<td>' + apontamento.horaInicio + '</td>';
-								tabelaApontamentos += '<td>' + apontamento.horaFim + '</td>';
-								tabelaApontamentos += '<td>' + apontamento.nomeSetor + '</td>';
-								tabelaApontamentos += '<td>' + apontamento.nomeAtividade + '</td>';
-								tabelaApontamentos += '<td>' + apontamento.centroDeCusto.nomeCentroDeCusto + '</td>';
-								tabelaApontamentos += '<td>' + apontamento.centroDeCusto.cliente + '</td>';
-								tabelaApontamentos += '<td class="coluna-observacao">' + escapeHtml(apontamento.observacao) + '</td>';
-								tabelaApontamentos += '<td class="coluna-botoes">';
-								tabelaApontamentos += '<button class="btn btn-primary btn-sm btn-spacing" onclick="editarApontamento('+ apontamento.id +')"><i class="fa fa-edit"></i></button>';	
-								tabelaApontamentos += '<button class="btn btn-danger btn-sm btn-spacing" onclick="excluirApontamento('+ apontamento.id +')" data-toggle="tooltip" data-placement="top" title="Excluir"><i class="fas fa-trash-alt"></i></button>';
-								tabelaApontamentos += '</td>';
-								tabelaApontamentos += '</tr>';
+							data.forEach(function(apontamento) {
+								if (centroCustoSelecionado === 0 || apontamento.centroDeCusto.id === centroCustoSelecionado) {
+									tabelaApontamentos += '<tr>';
+									tabelaApontamentos += '<td>' + apontamento.funcionario.nome + '</td>';
+									tabelaApontamentos += '<td class="coluna-data">' + formatDateToShow(apontamento.dataApontamento)  + '</td>';
+									tabelaApontamentos += '<td class="coluna-horas-trabalhadas">' + apontamento.saldoHoras + '</td>';
+									totalHoras += apontamento.valorSaldoHoras;
+									tabelaApontamentos += '<td>' + apontamento.horaInicio + '</td>';
+									tabelaApontamentos += '<td>' + apontamento.horaFim + '</td>';
+									tabelaApontamentos += '<td>' + apontamento.nomeSetor + '</td>';
+									tabelaApontamentos += '<td>' + apontamento.nomeAtividade + '</td>';
+									tabelaApontamentos += '<td>' + apontamento.centroDeCusto.nomeCentroDeCusto + '</td>';
+									tabelaApontamentos += '<td>' + apontamento.centroDeCusto.cliente + '</td>';
+									tabelaApontamentos += '<td class="coluna-observacao">' + escapeHtml(apontamento.observacao) + '</td>';
+									tabelaApontamentos += '<td class="coluna-botoes">';
+									tabelaApontamentos += '<button class="btn btn-primary btn-sm btn-spacing" onclick="editarApontamento('+ apontamento.id +')"><i class="fa fa-edit"></i></button>';	
+									tabelaApontamentos += '<button class="btn btn-danger btn-sm btn-spacing" onclick="excluirApontamento('+ apontamento.id +')" data-toggle="tooltip" data-placement="top" title="Excluir"><i class="fas fa-trash-alt"></i></button>';
+									tabelaApontamentos += '</td>';
+									tabelaApontamentos += '</tr>';
+								}
+							});
+
+							tabelaApontamentos += '<tr>';
+							tabelaApontamentos += '<td colspan="2" style="text-align: right;"><b>Total de Horas:</b></td>';
+							tabelaApontamentos += '<td><b>' + totalHoras.toFixed(2) + '</b></td>';
+
+							$('#apontamento-list').html(tabelaApontamentos);
+							// Carrega os centros de custo no filtro
+							var centrosCustoUnicos = data.map(function(apontamento) {
+								return { id: apontamento.centroDeCusto.id, nome: apontamento.centroDeCusto.nomeCentroDeCusto };
+							}).filter((centroCusto, index, self) =>
+								index === self.findIndex((t) => (
+									t.id === centroCusto.id
+								))
+							);
+							var optionsCentroCusto = '<option value=0>Todos</option>';
+							centrosCustoUnicos.forEach(function(centroCusto) {
+								optionsCentroCusto += '<option value="' + centroCusto.id + '">' + centroCusto.nome + '</option>';
+							});
+							$('#centroCustoSelect').html(optionsCentroCusto);
+							if (centroCustoSelecionado != 0){ 
+								$('#centroCustoSelect').html(optionsCentroCusto).val(centroCustoSelecionado);
 							}
-						});
-
-						tabelaApontamentos += '<tr>';
-						tabelaApontamentos += '<td colspan="2" style="text-align: right;"><b>Total de Horas:</b></td>';
-						tabelaApontamentos += '<td><b>' + totalHoras.toFixed(2) + '</b></td>';
-
-						$('#apontamento-list').html(tabelaApontamentos);
-						// Carrega os centros de custo no filtro
-						var centrosCustoUnicos = data.map(function(apontamento) {
-							return { id: apontamento.centroDeCusto.id, nome: apontamento.centroDeCusto.nomeCentroDeCusto };
-						}).filter((centroCusto, index, self) =>
-							index === self.findIndex((t) => (
-								t.id === centroCusto.id
-							))
-						);
-						var optionsCentroCusto = '<option value=0>Todos</option>';
-						centrosCustoUnicos.forEach(function(centroCusto) {
-							optionsCentroCusto += '<option value="' + centroCusto.id + '">' + centroCusto.nome + '</option>';
-						});
-						$('#centroCustoSelect').html(optionsCentroCusto);
-						if (centroCustoSelecionado != 0){ 
-							$('#centroCustoSelect').html(optionsCentroCusto).val(centroCustoSelecionado);
+							
+						} else {
+							// Se não houver apontamentos, exiba a mensagem e esconda a tabela.
+							$('#apontamento-list').html(`
+								<tr>
+									<td colspan="4" class="text-center">
+										<div id="no-data-placeholder" class="text-center mt-4">
+											<h5>Nenhum apontamento para esse intervalo!</h5>
+										</div>
+									</td>
+								</tr>
+							`);
 						}
-						
-					} else {
-						// Se não houver apontamentos, exiba a mensagem e esconda a tabela.
-						$('#apontamento-list').html(`
-							<tr>
-								<td colspan="4" class="text-center">
-									<div id="no-data-placeholder" class="text-center mt-4">
-										<h5>Nenhum apontamento para esse intervalo!</h5>
-									</div>
-								</td>
-							</tr>
-						`);
+						$('#loading').hide();
+      		},
+					error: function(jqXHR, textStatus, errorThrown) {
+						console.error('Erro ao carregar apontamentos:', textStatus, errorThrown);
+						alert('Ocorreu um erro ao carregar os apontamentos. Por favor, tente novamente.');
+						$('#loading').hide();
 					}
-					$('#loading').hide();
-                },
-				error: function(jqXHR, textStatus, errorThrown) {
-					console.error('Erro ao carregar apontamentos:', textStatus, errorThrown);
-					alert('Ocorreu um erro ao carregar os apontamentos. Por favor, tente novamente.');
-					$('#loading').hide();
-				}
-            });
-        }
+      });
+    }
 		
 		function editarApontamento(idApontamento) {
 			// Redirecione para a página de edição ou abra um modal, conforme sua implementação
@@ -428,10 +428,10 @@
 
 		function gerarExcelComDados(data) {
 			var workbook = XLSX.utils.book_new();
+			var todosApontamentos = [];
+
 			data.forEach(listagemCompleta => {
-				totalHoras = 0;
 				var dadosParaExcel = listagemCompleta.listagemApontamento.map(apontamento => {
-						totalHoras += apontamento.valorSaldoHoras;
 						return {
 								"Nome": listagemCompleta.funcionario.nome,
 								"Data": formatDateToShow(apontamento.dataApontamento),
@@ -446,8 +446,10 @@
 						};
 						
 				});
+				todosApontamentos.push(dadosParaExcel);
+			});
 
-				dadosParaExcel.push({
+			todosApontamentos.push({
 						"Nome": "Total de Horas",
 						"Data": "",
 						"Horas Trabalhadas": totalHoras.toFixed(2),
@@ -460,17 +462,16 @@
 						"Observação": ""
 				});
 
-				var worksheet = XLSX.utils.json_to_sheet(dadosParaExcel);
-				worksheet['!cols'] = ajustarLarguraColuna(dadosParaExcel);
-				var nomePlanilha = listagemCompleta.funcionario.nome || "Sem Nome"; // Caso o nome não esteja disponível
-				XLSX.utils.book_append_sheet(workbook, worksheet, nomePlanilha.substring(0, 31)); // O nome da planilha deve ter no máximo 31 caracteres
-			});
+				var worksheet = XLSX.utils.json_to_sheet(todosApontamentos);
+				worksheet['!cols'] = ajustarLarguraColuna(todosApontamentos);
+				XLSX.utils.book_append_sheet(workbook, worksheet, "Todos"); // O nome da planilha deve ter no máximo 31 caracteres
 
-			var iconeExportacao = document.querySelector('.gray-icon');
-			iconeExportacao.src = 'https://cdn-icons-png.flaticon.com/512/732/732220.png';
-      iconeExportacao.style.pointerEvents = 'auto';
 
-			XLSX.writeFile(workbook, "Apontamentos.xlsx");
+				var iconeExportacao = document.querySelector('.gray-icon');
+				iconeExportacao.src = 'https://cdn-icons-png.flaticon.com/512/732/732220.png';
+				iconeExportacao.style.pointerEvents = 'auto';
+
+				XLSX.writeFile(workbook, "Apontamentos.xlsx");
 		}
 						
 		function exportarParaExcel() {
