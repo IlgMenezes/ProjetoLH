@@ -429,49 +429,63 @@
 		function gerarExcelComDados(data) {
 			var workbook = XLSX.utils.book_new();
 			var todosApontamentos = [];
+			var totalHoras = 0;
 
 			data.forEach(listagemCompleta => {
-				var dadosParaExcel = listagemCompleta.listagemApontamento.map(apontamento => {
-						return {
-								"Nome": listagemCompleta.funcionario.nome,
-								"Data": formatDateToShow(apontamento.dataApontamento),
-								"Horas Trabalhadas": apontamento.saldoHoras,
-								"Início": apontamento.horaInicio,
-								"Fim": apontamento.horaFim,
-								"Setor": apontamento.nomeSetor,
-								"Atividade": apontamento.nomeAtividade,
-								"Centro de Custo": apontamento.centroDeCusto.nomeCentroDeCusto,
-								"Cliente": apontamento.centroDeCusto.cliente,
-								"Observação": apontamento.observacao
-						};
-						
-				});
-				todosApontamentos.push(dadosParaExcel);
+					listagemCompleta.listagemApontamento.forEach(apontamento => {
+							totalHoras += apontamento.valorSaldoHoras;
+							todosApontamentos.push({
+									"Nome": listagemCompleta.funcionario.nome,
+									"Data": formatDateToShow(apontamento.dataApontamento),
+									"Horas Trabalhadas": {
+											t: 'n', // Tipo de dado (date/time)
+											v: apontamento.valorSaldoHoras.toFixed(2), // Valor
+											s: { alignment: { horizontal: 'center' } } // Centraliza o conteúdo da célula
+									},
+									"Início": apontamento.horaInicio,
+									"Fim": apontamento.horaFim,
+									"Setor": apontamento.nomeSetor,
+									"Atividade": apontamento.nomeAtividade,
+									"Centro de Custo": apontamento.centroDeCusto.nomeCentroDeCusto,
+									"Cliente": apontamento.centroDeCusto.cliente,
+									"Observação": apontamento.observacao
+							});
+					});
 			});
 
+			todosApontamentos.push({}); // Adiciona uma linha em branco
 			todosApontamentos.push({
-						"Nome": "Total de Horas",
-						"Data": "",
-						"Horas Trabalhadas": totalHoras.toFixed(2),
-						"Início": "",
-						"Fim": "",
-						"Setor": "",
-						"Atividade": "",
-						"Centro de Custo": "",
-						"Cliente": "",
-						"Observação": ""
-				});
+        "Nome": "Total Horas",
+        "Data": "",
+        "Horas Trabalhadas": {
+					f: `SUBTOTAL(109,C2:C${todosApontamentos.length})`
+        },
+        "Início": "",
+        "Fim": "",
+        "Setor": "",
+        "Atividade": "",
+        "Centro de Custo": "",
+        "Cliente": "",
+        "Observação": ""
+    });
 
-				var worksheet = XLSX.utils.json_to_sheet(todosApontamentos);
-				worksheet['!cols'] = ajustarLarguraColuna(todosApontamentos);
-				XLSX.utils.book_append_sheet(workbook, worksheet, "Todos"); // O nome da planilha deve ter no máximo 31 caracteres
+			var worksheet = XLSX.utils.json_to_sheet(todosApontamentos);
 
+			worksheet['B' + (todosApontamentos.length + 1)].s = { font: { bold: true } };
 
-				var iconeExportacao = document.querySelector('.gray-icon');
-				iconeExportacao.src = 'https://cdn-icons-png.flaticon.com/512/732/732220.png';
-				iconeExportacao.style.pointerEvents = 'auto';
+			// Define o filtro para todas as linhas, exceto a última
+			var range = XLSX.utils.decode_range(worksheet['!ref']);
+			range.e.r -= 2; // Exclui a última linha do filtro
 
-				XLSX.writeFile(workbook, "Apontamentos.xlsx");
+			worksheet['!cols'] = ajustarLarguraColuna(todosApontamentos);
+			worksheet['!autofilter'] = { ref: XLSX.utils.encode_range(range) }; // Aplica o filtro
+			XLSX.utils.book_append_sheet(workbook, worksheet, "Todos");
+
+			var iconeExportacao = document.querySelector('.gray-icon');
+			iconeExportacao.src = 'https://cdn-icons-png.flaticon.com/512/732/732220.png';
+			iconeExportacao.style.pointerEvents = 'auto';
+
+			XLSX.writeFile(workbook, "Apontamentos.xlsx");
 		}
 						
 		function exportarParaExcel() {
@@ -496,7 +510,7 @@
 			ws['!cols'] = [
 				{ wch: 20 }, // Largura da coluna "Nome do Funcionário"
 				{ wch: 12 }, // Largura da coluna "Data"
-				{ wch: 10 }, // Largura da coluna "Horas Trabalhadas"
+				{ wch: 6 }, // Largura da coluna "Horas Trabalhadas"
 				// ... Adicione mais objetos para colunas adicionais se necessário
 			];
 
