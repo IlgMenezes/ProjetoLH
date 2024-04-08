@@ -82,6 +82,7 @@
 		var urlParams = new URLSearchParams(window.location.search);
         var token = urlParams.get('token'); 
 				var baseUrl;
+				var maiorFunc = 0;
 
         $(document).ready(function() {
 					if (window.location.hostname.includes("localhost")) {
@@ -111,6 +112,9 @@
 								tabelaCentrosDeCusto += '<td>' + centro.horasTotais + '</td>';
 								tabelaCentrosDeCusto += '<td>' + centro.horasTotaisApontadas.toFixed(2) + '</td>';
 								tabelaCentrosDeCusto += '<td>';
+								if(maiorFunc >= 3){
+									tabelaCentrosDeCusto += '<button class="btn btn-warning btn-sm btn-spacing" onclick="gerenciarCentroDeCusto('+ centro.centroDeCusto.id +')" data-bs-toggle="tooltip" data-bs-placement="top" title="Gerenciar Centro de Custo"><i class="fa fa-cog"></i></button>';
+								}
 								tabelaCentrosDeCusto += '<button class="btn btn-primary btn-sm btn-spacing" onclick="editarCentroDeCusto('+ centro.centroDeCusto.id +')"><i class="fa fa-edit"></i></button>';
 								tabelaCentrosDeCusto += '<button class="btn btn-danger btn-sm" onclick="excluirCentroDeCusto('+ centro.centroDeCusto.id +')"><i class="fa fa-trash"></i></button>';
 								tabelaCentrosDeCusto += '</td>';
@@ -122,6 +126,10 @@
 							alert('Erro ao carregar os centros de custo: ' + textStatus);
 						}
 					});
+        }
+
+				function gerenciarCentroDeCusto(idCentroDeCusto) {
+					window.location.href = './gerencia_projeto.html?idCentroDeCusto=' + idCentroDeCusto;
         }
 
         function editarCentroDeCusto(idCentroDeCusto) {
@@ -154,6 +162,7 @@
 		
 		function validateToken() {
 			token = localStorage.getItem("jwtToken")
+			maiorFunc = localStorage.getItem("maiorFunc");
 			if (token) {
 				return true;
 			}
