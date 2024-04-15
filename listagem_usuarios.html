@@ -90,7 +90,7 @@
 		function validateToken() {
 			token = localStorage.getItem("jwtToken");
 			var maiorFunc = localStorage.getItem("maiorFunc");
-			if (token && maiorFunc >= 3) {
+			if (token && maiorFunc >= 2) {
 				return true;
 			}
 			else{

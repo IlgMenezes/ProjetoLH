@@ -112,7 +112,7 @@
 								tabelaCentrosDeCusto += '<td>' + centro.horasTotais + '</td>';
 								tabelaCentrosDeCusto += '<td>' + centro.horasTotaisApontadas.toFixed(2) + '</td>';
 								tabelaCentrosDeCusto += '<td>';
-								if(maiorFunc >= 3){
+								if(maiorFunc >= 2){
 									tabelaCentrosDeCusto += '<button class="btn btn-warning btn-sm btn-spacing" onclick="gerenciarCentroDeCusto('+ centro.centroDeCusto.id +')" data-bs-toggle="tooltip" data-bs-placement="top" title="Gerenciar Centro de Custo"><i class="fa fa-cog"></i></button>';
 								}
 								tabelaCentrosDeCusto += '<button class="btn btn-primary btn-sm btn-spacing" onclick="editarCentroDeCusto('+ centro.centroDeCusto.id +')"><i class="fa fa-edit"></i></button>';
