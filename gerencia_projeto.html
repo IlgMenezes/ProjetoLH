@@ -174,7 +174,8 @@
         var baseUrl;
         var urlParams = new URLSearchParams(window.location.search);
         var idCentroDeCusto = urlParams.get('idCentroDeCusto');
-        var token = urlParams.get('token');     
+        var token = urlParams.get('token');
+        var maiorFunc = 0;     
         var usuarioSelecionado;
 
         $(document).ready(function() {
@@ -252,7 +253,11 @@
                 setoresList += '<tr class="setor">';
                 setoresList += '<td><i class="fas fa-chevron-right"></i><strong>' + setor.setor.nome + '</strong></td>';
                 setoresList += '<td>' + formatarNumero(setor.totalHorasPlanejadas) + 'h</td>'; // Horas Planejadas
-                setoresList += '<td>' + formatarNumero(setor.totalHoras) + 'h</td>'; // Horas Realizadas
+                if(maiorFunc >= 3){
+                    setoresList += '<td>' + formatarNumero(setor.totalHoras) + 'h / ' + formatarDinheiro(setor.totalCustoHoras) + '</td>'; // Horas Realizadas
+                } else{
+                    setoresList += '<td>' + formatarNumero(setor.totalHoras) + 'h</td>';
+                }
 
                 if (saldoSetor < 0) {
                     setoresList += '<td class="negativo">' + formatarNumero(saldoSetor) + 'h</td>';
@@ -270,8 +275,12 @@
                     setoresList += '<tr class="atividade">';
                     setoresList += '<td><i class="fas fa-chevron-right"></i>' + atividade.atividade.nome + '</td>';
                     setoresList += '<td>' + formatarNumero(atividade.totalHorasPlanejadas) + 'h</td>'; // Horas Planejadas
-                    setoresList += '<td>' + formatarNumero(atividade.totalHoras) + 'h</td>'; // Horas Realizadas
-                    
+                    if(maiorFunc >= 3){
+                        setoresList += '<td>' + formatarNumero(atividade.totalHoras) + 'h / ' + formatarDinheiro(atividade.totalCustoHoras) + '</td>'; // Horas Realizadas
+                    } else{
+                        setoresList += '<td>' + formatarNumero(atividade.totalHoras) + 'h</td>';
+                    }
+
                     if (saldoAtividade < 0) {
                         setoresList += '<td class="negativo">' + formatarNumero(saldoAtividade) + 'h</td>';
                     } else {
@@ -314,9 +323,13 @@
                 return numero.toFixed(1);
             }
         }
+
+        function formatarDinheiro(valor) {
+            return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        }
         function validateToken() {
 			token = localStorage.getItem("jwtToken");
-			var maiorFunc = localStorage.getItem("maiorFunc");
+			maiorFunc = localStorage.getItem("maiorFunc");
 			if (token && maiorFunc >= 2) {
 				return true;
 			}
