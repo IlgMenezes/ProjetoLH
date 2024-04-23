@@ -59,6 +59,7 @@
 							<th>Nome do Centro de Custo</th>
 							<th>Gerente</th>
 							<th>Cliente</th>
+							<th>Data Início</th>
 							<th>Total de Horas Vendidas</th>
 							<th>Total de Horas Gastas</th>
 							<th>Ações</th>
@@ -109,8 +110,9 @@
 								tabelaCentrosDeCusto += '<td>' + centro.centroDeCusto.nomeCentroDeCusto + '</td>';
 								tabelaCentrosDeCusto += '<td>' + centro.nomeGerente + '</td>'; // Substitua pelo método correto para obter o nome do gerente
 								tabelaCentrosDeCusto += '<td>' + centro.centroDeCusto.cliente + '</td>';
-								tabelaCentrosDeCusto += '<td>' + centro.horasTotais + '</td>';
-								tabelaCentrosDeCusto += '<td>' + centro.horasTotaisApontadas.toFixed(2) + '</td>';
+								tabelaCentrosDeCusto += '<td>' + formatDateToShow(centro.centroDeCusto.dataInicio) + '</td>';
+								tabelaCentrosDeCusto += '<td class="text-center">' + centro.horasTotais + '</td>';
+								tabelaCentrosDeCusto += '<td class="text-center">' + centro.horasTotaisApontadas.toFixed(2) + '</td>';
 								tabelaCentrosDeCusto += '<td>';
 								if(maiorFunc >= 2){
 									tabelaCentrosDeCusto += '<button class="btn btn-warning btn-sm btn-spacing" onclick="gerenciarCentroDeCusto('+ centro.centroDeCusto.id +')" data-bs-toggle="tooltip" data-bs-placement="top" title="Gerenciar Centro de Custo"><i class="fa fa-cog"></i></button>';
