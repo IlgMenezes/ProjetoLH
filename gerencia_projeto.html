@@ -117,6 +117,10 @@
             color: red !important;
             font-weight: bold;
         }
+        .disabled-icon {
+            color: #999 !important; /* Cinza claro */
+            pointer-events: none; /* Desabilita o clique na seta */
+        }
     </style>
 </head>
 <body>
@@ -224,7 +228,7 @@
                     carregarDadosGerenciaProjeto(response);
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
-                    alert('Erro ao filtrar os dados: ' + textStatus);
+                    alert('Erro ao filtrar os dados: ' + textStatus + ': ' + errorThrown);
                 }
             });
         }
@@ -308,8 +312,9 @@
                 setoresList += '</td>';
                 setoresList += '</tr>';
             });
+            var despesasRow = '<tr class="setor"><td><i class="fas fa-chevron-right disabled-icon"></i><strong>Despesas</strong></td><td>-</td><td>' + formatarDinheiro(response.totalDespesa) + '</td><td></td></tr>';
             $('#setores-list').html(setoresList);
-
+            $('#setores-list').append(despesasRow);
         }
         function formatarData(data) {
             var partesData = data.split('-');

@@ -291,7 +291,7 @@
       		},
 					error: function(jqXHR, textStatus, errorThrown) {
 						console.error('Erro ao carregar apontamentos:', textStatus, errorThrown);
-						alert('Ocorreu um erro ao carregar os apontamentos. Por favor, tente novamente.');
+						alert('Ocorreu um erro ao carregar os apontamentos. Por favor, tente novamente.' + textStatus + ': ' + errorThrown);
 						$('#loading').hide();
 					}
       });

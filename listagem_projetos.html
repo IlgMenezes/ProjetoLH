@@ -125,7 +125,7 @@
 							$('#centroDeCusto-list').html(tabelaCentrosDeCusto);
 						},
 						error: function(jqXHR, textStatus, errorThrown) {
-							alert('Erro ao carregar os centros de custo: ' + textStatus);
+							alert('Erro ao carregar os centros de custo: ' + textStatus + ': ' + errorThrown);
 						}
 					});
         }
