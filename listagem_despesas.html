@@ -74,6 +74,7 @@
             <table class="table">
                 <thead>
                 <tr>
+                    <th>Data</th>
                     <th>Usuário</th> <!-- Nova coluna para o nome do usuário -->
                     <th>Tipo de Despesa</th>
                     <th>Valor</th>
@@ -137,13 +138,15 @@
                   var tabelaDespesas = '';
                     data.despesas.forEach(function(despesa) {
                         tabelaDespesas += '<tr>';
-                        tabelaDespesas += '<td>' + despesa.nomeUsuario + '</td>';             // Nome do usuário
+                        tabelaDespesas += '<td>' + formatDateToShow(despesa.data) + '</td>'; 
+                        tabelaDespesas += '<td>' + despesa.nomeUsuario + '</td>';
                         tabelaDespesas += '<td>' + despesa.descricaoTipoDespesa + '</td>';   // Tipo de despesa
                         tabelaDespesas += '<td>' + formatarDinheiro(despesa.valor) + '</td>'; // Valor
                         tabelaDespesas += '<td>' + despesa.nomeProjeto + '</td>';             // Nome do projeto
                         tabelaDespesas += '<td>' + despesa.descricaoAtividade + '</td>';
                         if (despesa.caminhoArquivo) { 
-                            tabelaDespesas += '<td><a href="' + baseUrl + despesa.caminhoArquivo + '" download><i class="fas fa-download"></i></a></td>';
+                            tabelaDespesas += '<td><a href="' + baseUrl + 'api/apontamento/downloadDespesa/' + despesa.idDespesa + '" target="_blank"><i class="fas fa-download"></i></a></td>';
+                            //tabelaDespesas += '<td><a href="' + despesa.caminhoArquivo + '" download><i class="fas fa-download"></i></a></td>';
                         } else {
                             tabelaDespesas += '<td></td>'; // Célula vazia se não houver arquivo
                         }
@@ -236,6 +239,13 @@
 
             return `${ano}-${mes}-${dia}`;
         }
+        function formatDateToShow(dataString) {
+			var data = new Date(dataString);
+			var dia = ("0" + data.getDate()).slice(-2);
+			var mes = ("0" + (data.getMonth() + 1)).slice(-2);
+			var ano = data.getFullYear();
+			return `${dia}-${mes}-${ano}`;
+		}
     </script>
 </body>
 </html>
