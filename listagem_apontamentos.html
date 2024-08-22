@@ -413,10 +413,10 @@
 			dadosParaExcel.forEach(row => {
 					Object.keys(row).forEach((key, index) => {
 							// Obtem o tamanho do conteúdo da célula
-							const tamanho = row[key] ? row[key].toString().length : 0;
+							const tamanho = row[key] ? row[key].toString().length : key.length;
 
 							// Se a largura atual desta coluna não estiver definida ou for menor do que o tamanho atual, atualiza
-							if (!largurasColunas[index] || largurasColunas[index] < tamanho) {
+							if ((!largurasColunas[index] || largurasColunas[index] < tamanho) && tamanho < 50) {
 									largurasColunas[index] = tamanho;
 							}
 					});
@@ -430,6 +430,10 @@
 			var workbook = XLSX.utils.book_new();
 			var todosApontamentos = [];
 			var totalHoras = 0;
+			function formatarBooleano(valor) {
+        return valor ? "Sim" : "Não";
+    	}
+
 
 			data.forEach(listagemCompleta => {
 					listagemCompleta.listagemApontamento.forEach(apontamento => {
@@ -448,7 +452,13 @@
 									"Atividade": apontamento.nomeAtividade,
 									"Centro de Custo": apontamento.centroDeCusto.nomeCentroDeCusto,
 									"Cliente": apontamento.centroDeCusto.cliente,
-									"Observação": apontamento.observacao
+									"Observação": apontamento.observacao,
+									"Número de Formatos": apontamento.centroDeCusto.controleVSB ? apontamento.numeroFormatos : "",
+									"Formatos Faturáveis": apontamento.centroDeCusto.controleVSB ? formatarBooleano(apontamento.formatosFaturaveis) : "",
+									"Horas Faturáveis VSB": apontamento.centroDeCusto.controleVSB ? apontamento.horasFaturaveisVSB : "",
+									"Início Horas Faturáveis VSB": apontamento.centroDeCusto.controleVSB ? apontamento.inicioHorasFaturaveisVSB : "",
+									"Fim Horas Faturáveis VSB": apontamento.centroDeCusto.controleVSB ? apontamento.fimHorasFaturaveisVSB : ""
+
 							});
 					});
 			});
@@ -466,7 +476,12 @@
         "Atividade": "",
         "Centro de Custo": "",
         "Cliente": "",
-        "Observação": ""
+        "Observação": "",
+				"Número de Formatos": "",
+				"Formatos Faturáveis": "",
+				"Horas Faturáveis VSB": "",
+				"Início Horas Faturáveis VSB": "",
+				"Fim Horas Faturáveis VSB": ""
     });
 
 			var worksheet = XLSX.utils.json_to_sheet(todosApontamentos);

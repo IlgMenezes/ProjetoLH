@@ -79,7 +79,7 @@
                         </div>
                     </div>
                 </div>
-				<div class="mb-3 row">
+								<div class="mb-3 row">
                     <label for="observacao" class="form-label col-sm-4">Observação:</label>
                     <div class="col-sm-8">
                         <input type="text" id="descricaoObservacao" name="descricaoObservacao" class="form-control">
@@ -100,6 +100,15 @@
 								<option value="3">Luciano Ezequiel Esteves Neto</option>
 								<!-- Outras opções de equipe -->
 							</select>
+						</div>
+					</div>
+					<div class="mb-3 row">
+						<label for="controleVSB" class="form-label col-sm-2">Controle VSB:</label>
+						<div class="col-sm-8">
+								<label class="switch">
+										<input type="checkbox" id="controleVSB" name="controleVSB">
+										<span class="slider round"></span>
+								</label>
 						</div>
 					</div>
 				</form>
@@ -302,6 +311,54 @@
 		  animation: fadeOut 1s;
 		  animation-fill-mode: forwards; /* Mantém o estado final depois da animação */
 		}
+		.switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 34px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: #2196F3;
+}
+
+input:focus + .slider {
+    box-shadow: 0 0 1px #2196F3;
+}
+
+input:checked + .slider:before {
+    transform: translateX(26px);
+}
 
     </style>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -405,6 +462,7 @@
 			$('#nomeCliente').val(centroDeCusto.cliente);
 			$('#nomeUnidade').val(centroDeCusto.unidade);
 			$('#descricaoObservacao').val(centroDeCusto.observacao);
+			document.getElementById("controleVSB").checked = centroDeCusto.controleVSB;
 
 			// Selecionar opções em dropdowns
 			$('#listaGestor').val(centroDeCusto.idGestor).trigger('change');
@@ -528,7 +586,8 @@
 			var statusSituacao = document.getElementById("statusSituacao").value;
 			var dataInicio = document.getElementById("dataInicio").value;
 			var dataFim = document.getElementById("dataFim").value;
-			
+			var controleVSB = document.getElementById("controleVSB").checked;
+
 			if(!formularioValido()){
 				alert("Informações inválidas!");
 				return;
@@ -551,6 +610,7 @@
 				dataInicio: formatDate(dataInicio), // Converta a data para o formato correto
 				dataFim: formatDate(dataFim), // Converta a data para o formato correto
 				observacao: descricaoObservacao,
+				controleVSB: controleVSB,
 				atividades: atividades,
 				equipe: equipeSelecionada
 			};
