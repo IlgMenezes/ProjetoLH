@@ -71,8 +71,18 @@
 					
 					<div class="row mb-3">
 						<div class="col-md-4">
-							<label for="numeroFormatos" class="form-label">Número de Formatos:</label>
-							<input type="number" id="numeroFormatos" name="numeroFormatos" class="form-control">
+							<label for="tipoFormato" class="form-label">Tipo de Formato:</label>
+							<select id="tipoFormato" name="tipoFormato" class="form-select" required>
+								<option value="1">A1N</option>
+								<option value="2">A1D</option>
+								<option value="3">A3N</option>
+								<option value="4">A3D</option>
+								<option value="5">A4N</option>
+								<option value="6">A4D</option>
+								<option value="7">H.H. (Engenheiro)</option>
+								<option value="8">H.H. (Técnico)</option>
+								<option value="9">D</option>
+							</select>
 						</div>
 						<div class="col-md-4">
 							<label for="formatosFaturaveis" class="form-label">Formatos Faturáveis:</label>
@@ -81,8 +91,8 @@
 							</div>
 						</div>
 						<div class="col-md-4">
-							<label for="horasFaturaveis" class="form-label">Quantidade de Horas:</label>
-							<input type="number" id="horasFaturaveis" name="horasFaturaveis" class="form-control">
+							<label for="numeroFormatos" class="form-label">Quantidade de Formatos:</label>
+							<input type="number" id="numeroFormatos" name="numeroFormatos" class="form-control">
 						</div>
 					</div>
 				
@@ -568,7 +578,7 @@
 
 			$('#numeroFormatos').val(apontamento.numeroFormatos || '');
 			$('#formatosFaturaveis').prop('checked', apontamento.formatosFaturaveis || false);
-			$('#horasFaturaveis').val(apontamento.horasFaturaveisVSB || '');
+			$('#tipoFormato').val(apontamento.tipoFormatoVSB || '');
 			$('#inicioHorasFaturaveis').val(apontamento.inicioHorasFaturaveisVSB ? apontamento.inicioHorasFaturaveisVSB.split('T')[1].substring(0, 5) : '');
 			$('#fimHorasFaturaveis').val(apontamento.fimHorasFaturaveisVSB ? apontamento.fimHorasFaturaveisVSB.split('T')[1].substring(0, 5) : '');
 			
@@ -725,7 +735,7 @@
 			if (centroDeCusto && centroDeCusto.controleVSB) {
 				apontamento.NumeroFormatos = parseInt($("#numeroFormatos").val());
 				apontamento.FormatosFaturaveis = $("#formatosFaturaveis").is(":checked");
-				apontamento.HorasFaturaveisVSB = converterParaDecimal($("#horasFaturaveis").val());
+				apontamento.tipoFormatoVSB = converterParaDecimal($("#tipoFormato").val());
 				apontamento.InicioHorasFaturaveisVSB = converterDateTime($("#inicioHorasFaturaveis").val());
 				apontamento.FimHorasFaturaveisVSB = converterDateTime($("#fimHorasFaturaveis").val());
 			}
@@ -909,7 +919,7 @@
 			$("#tipoDespesa").prop('selectedIndex', -1);
 			$("#centrodecusto").prop('selectedIndex', -1);
 
-			$("#numeroFormatos").val('');
+			$("#tipoFormato").prop('selectedIndex', -1);
 			$("#formatosFaturaveis").prop('checked', false);
 			$("#horasFaturaveis").val('');
 			$("#inicioHorasFaturaveis").val('');

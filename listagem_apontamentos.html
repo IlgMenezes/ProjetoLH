@@ -93,7 +93,7 @@
 	</div>
 	
 	<div class="d-flex container justify-content-end mb-3">
-
+		<button type="button" class="btn btn-primary" onclick="voltarParaUsuarios()">Voltar</button>&nbsp&nbsp
 		<button type="button" class="btn btn-primary" onclick="adicionarApontamento()">
             <i class="fa fa-plus"></i> Adicionar
         </button>
@@ -131,8 +131,6 @@
 		<div id="loading" style="display: none; text-align: center;">
 			 <img src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/0.16.1/images/loader-large.gif" alt="Carregando..." />
 		</div>
-		
-		<button type="button" class="btn btn-primary btn-voltar" onclick="voltarParaUsuarios()">Voltar</button>
   </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -430,10 +428,26 @@
 			var workbook = XLSX.utils.book_new();
 			var todosApontamentos = [];
 			var totalHoras = 0;
+
 			function formatarBooleano(valor) {
         return valor ? "Sim" : "Não";
     	}
 
+			function obterDescricaoTipo(tipoFormato) {
+					const descricoes = {
+							1: "A1N",
+							2: "A1D",
+							3: "A3N",
+							4: "A3D",
+							5: "A4N",
+							6: "A4D",
+							7: "H.H. (Engenheiro)",
+							8: "H.H. (Técnico)",
+							9: "D"
+					};
+
+					return descricoes[tipoFormato] || "Código não encontrado";
+			}
 
 			data.forEach(listagemCompleta => {
 					listagemCompleta.listagemApontamento.forEach(apontamento => {
@@ -453,9 +467,9 @@
 									"Centro de Custo": apontamento.centroDeCusto.nomeCentroDeCusto,
 									"Cliente": apontamento.centroDeCusto.cliente,
 									"Observação": apontamento.observacao,
-									"Número de Formatos": apontamento.centroDeCusto.controleVSB ? apontamento.numeroFormatos : "",
+									"Quantidade de Formatos": apontamento.centroDeCusto.controleVSB ? apontamento.numeroFormatos : "",
 									"Formatos Faturáveis": apontamento.centroDeCusto.controleVSB ? formatarBooleano(apontamento.formatosFaturaveis) : "",
-									"Horas Faturáveis VSB": apontamento.centroDeCusto.controleVSB ? apontamento.horasFaturaveisVSB : "",
+									"Tipo Formato VSB": apontamento.centroDeCusto.controleVSB ? obterDescricaoTipo(apontamento.tipoFormatoVSB) : "",
 									"Início Horas Faturáveis VSB": apontamento.centroDeCusto.controleVSB ? apontamento.inicioHorasFaturaveisVSB : "",
 									"Fim Horas Faturáveis VSB": apontamento.centroDeCusto.controleVSB ? apontamento.fimHorasFaturaveisVSB : ""
 
