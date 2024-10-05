@@ -144,20 +144,6 @@
 			</div>
 
 			<div class="row">
-
-				<a href="#" data-nivel-minimo="2" id="card-gerenciarBancoHoras">
-					<div class="col-md-3 col-sm-3">
-						<div class="service-box-wrap">
-							<div class="service-icon-wrap">
-								<i class="fa fa-calendar fa-4x" style="color:lightgray"></i>
-							</div> <!-- /.service-icon-wrap -->
-							<div class="service-cnt-wrap" style="color:lightgray">
-								<h3 class="service-title" style="color:lightgray">Gerenciar Banco de Horas</h3>
-								<p>Exibir informações consolidadas de um projeto.</p>
-							</div> <!-- /.service-cnt-wrap -->
-						</div> <!-- /.service-box-wrap -->
-					</div> <!-- /.col-md-4 -->
-				</a>
 				<a href="./listagem_projetos.html" data-nivel-minimo="3" id="card-gerenciarProjeto">
 					<div class="col-md-3 col-sm-3">
 						<div class="service-box-wrap">
@@ -171,15 +157,15 @@
 						</div> <!-- /.service-box-wrap -->
 					</div> <!-- /.col-md-4 -->
 				</a>
-				<a href="#" data-nivel-minimo="2" id="card-controlarEquipamentos">
+				<a href="#" data-nivel-minimo="2" id="card-listagemHoras" onclick="atualizarLink(event)">
 					<div class="col-md-3 col-sm-3">
 						<div class="service-box-wrap">
 							<div class="service-icon-wrap">
-								<i class="material-icons" style="font-size:60px;color:lightgray;">home_repair_service</i>
+								<img src="https://img.icons8.com/?size=70&id=zpgtCKZM3aEb&format=png&color=00a8d6" alt="icon">
 							</div> <!-- /.service-icon-wrap -->
 							<div class="service-cnt-wrap">
-								<h3 class="service-title" style="color:lightgray">Controlar Equipamentos</h3>
-								<p style="color:lightgray">Controle de Equipamentos</p>
+								<h3 class="service-title">Despesas</h3>
+								<p>Controlar as Despesas dos Projetos.</p>
 							</div> <!-- /.service-cnt-wrap -->
 						</div> <!-- /.service-box-wrap -->
 					</div> <!-- /.col-md-4 -->
@@ -259,6 +245,20 @@
 				window.location.href = baseUrl + "home";
 			}
 		}
+
+		function atualizarLink(event) {
+        event.preventDefault(); 
+        const dataAtual = new Date();
+        const dataInicio = new Date(dataAtual.getFullYear(), dataAtual.getMonth(), 1);
+        const dataInicioStr = `${dataInicio.getDate().toString().padStart(2, '0')}/${(dataInicio.getMonth() + 1).toString().padStart(2, '0')}/${dataInicio.getFullYear()}`;
+        
+        // Último dia do mês
+        const dataFim = new Date(dataAtual.getFullYear(), dataAtual.getMonth() + 1, 0);
+        const dataFimStr = `${dataFim.getDate().toString().padStart(2, '0')}/${(dataFim.getMonth() + 1).toString().padStart(2, '0')}/${dataFim.getFullYear()}`;
+        
+        const novaUrl = `./listagem_despesas.html?dataInicio=${dataInicioStr}&dataFim=${dataFimStr}`;
+        window.location.href = novaUrl;
+    }
 		
 	</script>
 </body>

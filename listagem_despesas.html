@@ -6,6 +6,28 @@
     <link rel="icon" href="https://simatec.com.br/wp-content/uploads/2017/03/cropped-logotipo_Horizontal_Poli-32x32.png" sizes="32x32">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 	<style>
+        input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+            accent-color: #007bff; 
+        }
+
+        #select-all:checked {
+            outline: 2px solid #007bff;
+        }
+        .status-pendente {
+            background-color: rgba(252, 252, 123, 0.459);
+            color: black;
+        }
+        .status-aprovado {
+            background-color: rgb(42, 151, 42);
+            color: white;
+        }
+        .status-rejeitado {
+            background-color: rgb(253, 132, 132);
+            color: white;
+        }
         .btn-spacing {
             margin-right: 5px; /* Espaço entre os botões */
         }
@@ -13,19 +35,28 @@
             padding: 0 15px; /* Reduzir as margens */
         }
         .scrollable-table {
-        overflow-y: auto;
-        max-height: 54vh; /* Altura máxima da tabela */
-    }
-    .scrollable-table table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-    .scrollable-table thead th {
-        position: sticky;
-        top: 0;
-        background-color: white; /* ou a cor de fundo que desejar */
-        z-index: 1;
-    }
+            overflow-y: auto;
+            max-height: 54vh; /* Altura máxima da tabela */
+        }
+        .scrollable-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .scrollable-table thead th {
+            position: sticky;
+            top: 0;
+            background-color: white; /* ou a cor de fundo que desejar */
+            z-index: 1;
+        }
+        select {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            padding: 5px;
+            border: none;
+            outline: none;
+            border-radius: 8px;
+        }
     </style>
 </head>
 <body>
@@ -69,17 +100,21 @@
             <div class="col-md-2">
                 <button id="btnFiltrar" class="btn btn-primary mt-4" onclick="carregarDespesas()">Filtrar</button>
             </div>
+            <div class="d-flex container justify-content-end mb-3">
+                <img onclick="exportarDespesasSelecionadas()" title="Exportar para Excel" src="https://cdn-icons-png.flaticon.com/512/732/732220.png" alt="Exportar Excel" style="height: 30px; width: 30px; cursor: pointer;">
+            </div>
         </div>
         <div class="scrollable-table">
             <table class="table">
                 <thead>
                 <tr>
+                    <th><input type="checkbox" id="select-all"></th>
                     <th>Data</th>
                     <th>Usuário</th> <!-- Nova coluna para o nome do usuário -->
                     <th>Tipo de Despesa</th>
                     <th>Valor</th>
                     <th>Projeto</th>
-                    <th>Atividade</th>
+                    <th>Status</th>
                     <th>Arquivo</th>
                 </tr>
                 </thead>
@@ -95,6 +130,9 @@
     <script src="https://code.jquery.com/jquery-1.9.1.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.2/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
+
     <script>
       var urlParams = new URLSearchParams(window.location.search);
       var usuarioIdSelecionado = urlParams.get('usuarioId');
@@ -119,8 +157,38 @@
           });
           definirCamposFiltro();
           carregarDespesas();
+          configurarCheckBox();
         }
       });
+
+    function getSelectedExpenses() {
+        const selectedExpenses = [];
+        const checkboxes = document.querySelectorAll('.expense-checkbox:checked');
+        
+        checkboxes.forEach(checkbox => {
+            selectedExpenses.push(checkbox.value);
+        });
+        
+        return selectedExpenses; // Retorna um array de IDs das despesas selecionadas
+    }
+
+    function configurarCheckBox(){
+        $('#select-all').on('change', function() {
+            $('.expense-checkbox').prop('checked', $(this).prop('checked'));
+        });
+
+        $('#expense-list').on('change', '.expense-checkbox', function() {
+        // Se qualquer checkbox individual for desmarcada, desmarca a checkbox "Selecionar Todos"
+        if (!$(this).prop('checked')) {
+            $('#select-all').prop('checked', false);
+        }
+        
+        // Se todas as checkboxes individuais estiverem marcadas, marca a checkbox "Selecionar Todos"
+        if ($('.expense-checkbox:checked').length === $('.expense-checkbox').length) {
+            $('#select-all').prop('checked', true);
+        }
+    });
+    }
 
       function carregarDespesas() {
         var inicio = formatDate($('#dataInicio').val());
@@ -136,29 +204,171 @@
               type: 'GET',
               success: function(data) {
                   var tabelaDespesas = '';
-                    data.despesas.forEach(function(despesa) {
-                        tabelaDespesas += '<tr>';
-                        tabelaDespesas += '<td>' + formatDateToShow(despesa.data) + '</td>'; 
-                        tabelaDespesas += '<td>' + despesa.nomeUsuario + '</td>';
-                        tabelaDespesas += '<td>' + despesa.descricaoTipoDespesa + '</td>';   // Tipo de despesa
-                        tabelaDespesas += '<td>' + formatarDinheiro(despesa.valor) + '</td>'; // Valor
-                        tabelaDespesas += '<td>' + despesa.nomeProjeto + '</td>';             // Nome do projeto
-                        tabelaDespesas += '<td>' + despesa.descricaoAtividade + '</td>';
-                        if (despesa.caminhoArquivo) { 
-                            tabelaDespesas += '<td><a href="' + baseUrl + 'api/apontamento/downloadDespesa/' + despesa.idDespesa + '" target="_blank"><i class="fas fa-download"></i></a></td>';
-                            //tabelaDespesas += '<td><a href="' + despesa.caminhoArquivo + '" download><i class="fas fa-download"></i></a></td>';
-                        } else {
-                            tabelaDespesas += '<td></td>'; // Célula vazia se não houver arquivo
-                        }
-                        tabelaDespesas += '</tr>';
-                    });
-
+                    if (data.despesas.length === 0) {
+                        tabelaDespesas = '<tr><td colspan="8" class="text-center">Nenhuma despesa para o filtro escolhido.</td></tr>';
+                    } else {
+                        data.despesas.forEach(function(despesa) {
+                            tabelaDespesas += '<tr>';
+                            tabelaDespesas += `<td><input type="checkbox" class="expense-checkbox" value="${despesa.idDespesa}"></td>`;
+                            tabelaDespesas += '<td>' + formatDateToShow(despesa.data) + '</td>'; 
+                            tabelaDespesas += '<td>' + despesa.nomeUsuario + '</td>';
+                            tabelaDespesas += '<td>' + despesa.descricaoTipoDespesa + '</td>';   // Tipo de despesa
+                            tabelaDespesas += '<td>' + formatarDinheiro(despesa.valor) + '</td>'; // Valor
+                            tabelaDespesas += '<td>' + despesa.nomeProjeto + '</td>';             // Nome do projeto
+                            tabelaDespesas += `<td><select onchange="atualizarStatus(${despesa.idDespesa}, this.value)"
+                                    class="${getStatusClass(despesa.status)}"
+                                    id="select-status-${despesa.idDespesa}"> 
+                                    <option value="0" ${despesa.status == 0 ? 'selected' : ''}>Pendente</option>
+                                    <option value="1" ${despesa.status == 1 ? 'selected' : ''}>Aprovado</option>
+                                    <option value="2" ${despesa.status == 2 ? 'selected' : ''}>Rejeitado</option>
+                                </select></td>`;
+                            if (despesa.caminhoArquivo) { 
+                                tabelaDespesas += '<td><a href="' + baseUrl + 'api/apontamento/downloadDespesa/' + despesa.idDespesa + '" target="_blank"><i class="fas fa-download"></i></a></td>';
+                                //tabelaDespesas += '<td><a href="' + despesa.caminhoArquivo + '" download><i class="fas fa-download"></i></a></td>';
+                            } else {
+                                tabelaDespesas += '<td></td>'; // Célula vazia se não houver arquivo
+                            }
+                            tabelaDespesas += '</tr>';
+                        });
+                    }
                     $('#expense-list').html(tabelaDespesas);
                     preencherFiltroUsuarios(data.usuarios);
                     preencherFiltroCentrosDeCusto(data.centrosDeCusto);
               }
           });
       }
+
+        function exportarDespesasSelecionadas() {
+            const despesasSelecionadas = [];
+
+            // Itera sobre todas as linhas da tabela que têm checkbox selecionada
+            $('#expense-list tr').each(function() {
+                const checkbox = $(this).find('.expense-checkbox');
+                
+                // Se a checkbox está marcada, coleta os dados da linha
+                if (checkbox.is(':checked')) {
+                    const linha = $(this);
+                    const despesa = {
+                        data: linha.find('td:eq(1)').text().trim(),
+                        usuario: linha.find('td:eq(2)').text().trim(),
+                        tipoDespesa: linha.find('td:eq(3)').text().trim(),
+                        valor: linha.find('td:eq(4)').text().trim(),
+                        projeto: linha.find('td:eq(5)').text().trim(),
+                        status: linha.find('td:eq(6)').find('select')[0].selectedOptions[0].text,
+                        arquivo: linha.find('td:eq(7)').find('a').attr('href') // Obtém o link para o arquivo, se existir
+                    };
+                    despesasSelecionadas.push(despesa);
+                }
+            });
+
+            if (despesasSelecionadas.length === 0) {
+                alert('Nenhuma despesa selecionada para exportar.');
+                return;
+            }
+
+            // Gera o Excel com as despesas selecionadas usando xlsx-populate
+            gerarExcelComDespesasSelecionadas(despesasSelecionadas);
+        }
+
+        function gerarExcelComDespesasSelecionadas(despesas) {
+            // Cria um novo workbook com ExcelJS
+            const workbook = new ExcelJS.Workbook();
+            const sheet = workbook.addWorksheet("Despesas Selecionadas");
+
+            // Define cabeçalhos
+            sheet.columns = [
+                { header: "Data", key: "data", width: 15 },
+                { header: "Usuário", key: "usuario", width: 20 },
+                { header: "Tipo de Despesa", key: "tipoDespesa", width: 25 },
+                { header: "Valor", key: "valor", width: 15 },
+                { header: "Projeto", key: "projeto", width: 25 },
+                { header: "Status", key: "status", width: 15 },
+                { header: "Comprovante", key: "comprovante", width: 50 }
+            ];
+
+            // Formatar cabeçalhos
+            sheet.getRow(1).eachCell(cell => {
+                cell.font = { bold: true };
+                cell.alignment = { horizontal: 'center', vertical: 'middle' };
+                cell.fill = {
+                    type: 'pattern',
+                    pattern: 'solid',
+                    fgColor: { argb: 'FFBFBFBF' } // Cor de fundo cinza claro
+                };
+            });
+
+            // Função para adicionar imagem de forma síncrona
+            const adicionarImagem = (index, despesa, row) => {
+                return fetch(despesa.arquivo)
+                    .then(res => res.blob())
+                    .then(blob => {
+                        const reader = new FileReader();
+                        return new Promise(resolve => {
+                            reader.onload = () => {
+                                const imageId = workbook.addImage({
+                                    base64: reader.result,
+                                    extension: blob.type.split('/')[1] // "png", "jpg", etc.
+                                });
+                                sheet.getRow(index + 2).height = 75;
+                                // Adiciona a imagem na célula apropriada
+                                sheet.addImage(imageId, {
+                                    tl: { col: 6, row: index + 1 }, // Define a posição da imagem
+                                    ext: { width: 100, height: 100 } // Ajusta o tamanho da imagem
+                                });
+                                resolve();
+                            };
+                            reader.readAsDataURL(blob);
+                        });
+                    });
+            };
+
+            // Adiciona dados das despesas à planilha e prepara as promessas de imagem
+            const imagePromises = despesas.map((despesa, index) => {
+                const row = sheet.addRow({
+                    data: despesa.data,
+                    usuario: despesa.usuario,
+                    tipoDespesa: despesa.tipoDespesa,
+                    valor: despesa.valor,
+                    projeto: despesa.projeto,
+                    status: despesa.status,
+                    comprovante: despesa.arquivo ? "" : ""
+                });
+
+                // Formatar células de valor para moeda
+                row.getCell('D').numFmt = '"R$"#,##0.00;[Red]"R$"#,##0.00'; // Formato de moeda BRL
+
+                // Adiciona borda às células
+                row.eachCell(cell => {
+                    cell.border = {
+                        top: { style: 'thin' },
+                        left: { style: 'thin' },
+                        bottom: { style: 'thin' },
+                        right: { style: 'thin' }
+                    };
+                    cell.alignment = { vertical: 'middle' };
+                });
+
+                // Se houver comprovante, retorna uma promessa para adicionar a imagem
+                if (despesa.arquivo) {
+                    return adicionarImagem(index, despesa, row);
+                }
+                return Promise.resolve();
+            });
+
+            // Após todas as promessas serem resolvidas, gera e baixa o Excel
+            Promise.all(imagePromises).then(() => {
+                workbook.xlsx.writeBuffer().then(buffer => {
+                    const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = "Despesas.xlsx";
+                    a.click();
+                    URL.revokeObjectURL(url);
+                });
+            });
+        }
+
 		
       function voltarParaIndex() {
         window.history.back();
@@ -182,19 +392,56 @@
 
       }
 
-    function preencherFiltroCentrosDeCusto(centrosDeCusto) {
-        var selectCentroDeCusto = $('#filtroProjeto'); // O ID no HTML é 'projeto'
-        selectCentroDeCusto.empty(); 
-        selectCentroDeCusto.append($('<option>', { value: '', text: 'Selecione...' }));
-
-        centrosDeCusto.forEach(function(centro) {
-            var option = $('<option>', { value: centro.id, text: centro.nomeCentroDeCusto });
-            if (centro.id == centroCustoIdSelecionado) {
-                option.attr('selected', 'selected');
+        function atualizarStatus(idDespesa, novoStatus) {
+            if(localStorage.getItem('maiorFunc') > 1){
+                var usuarioLogadoId = localStorage.getItem('uid');
+                const despesaAtualizada = {
+                    id: idDespesa,
+                    status: parseInt(novoStatus)
+                };
+                $.ajax({
+                    url: baseUrl + `api/apontamento/atualizarStatusDespesa?usuarioLogadoId=${usuarioLogadoId}`,
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(despesaAtualizada),
+                    success: function() {
+                        alert('Despesa atualizada com sucesso!');
+                        const select = document.getElementById(`select-status-${idDespesa}`);
+                        select.className = getStatusClass(novoStatus);
+                    },
+                    error: function() {
+                        alert('Erro ao atualizar Despesa.');
+                    }
+                });
             }
-            selectCentroDeCusto.append(option);
-        });
-    }
+        }
+
+        function getStatusClass(status) {
+            switch (parseInt(status)) {
+                case 0:
+                    return 'status-pendente';
+                case 1:
+                    return 'status-aprovado';
+                case 2:
+                    return 'status-rejeitado';
+                default:
+                    return '';
+            }
+        }
+
+        function preencherFiltroCentrosDeCusto(centrosDeCusto) {
+            var selectCentroDeCusto = $('#filtroProjeto'); // O ID no HTML é 'projeto'
+            selectCentroDeCusto.empty(); 
+            selectCentroDeCusto.append($('<option>', { value: '', text: 'Selecione...' }));
+
+            centrosDeCusto.forEach(function(centro) {
+                var option = $('<option>', { value: centro.id, text: centro.nomeCentroDeCusto });
+                if (centro.id == centroCustoIdSelecionado) {
+                    option.attr('selected', 'selected');
+                }
+                selectCentroDeCusto.append(option);
+            });
+        }
       function definirCamposFiltro() {
         if (!usuarioIdSelecionado && !centroCustoIdSelecionado && !dataInicio && !dataFim) {
           var dataAtual = new Date();
