@@ -234,6 +234,7 @@
                     $('#expense-list').html(tabelaDespesas);
                     preencherFiltroUsuarios(data.usuarios);
                     preencherFiltroCentrosDeCusto(data.centrosDeCusto);
+                    habilitarSelectStatus();
               }
           });
       }
@@ -370,27 +371,27 @@
         }
 
 		
-      function voltarParaIndex() {
-        window.history.back();
-      }
+        function voltarParaIndex() {
+            window.history.back();
+        }
 
-      function formatarDinheiro(valor) {
-          return 'R$ ' + valor.toFixed(2).replace('.', ',');
-      }
-      function preencherFiltroUsuarios(usuarios) {
-        var selectUsuario = $('#filtroUsuario');
-        selectUsuario.empty(); // Limpa as opções existentes
-        selectUsuario.append($('<option>', { value: '', text: 'Selecione...' })); // Adiciona a opção "Todos"
+        function formatarDinheiro(valor) {
+            return 'R$ ' + valor.toFixed(2).replace('.', ',');
+        }
+        function preencherFiltroUsuarios(usuarios) {
+            var selectUsuario = $('#filtroUsuario');
+            selectUsuario.empty(); // Limpa as opções existentes
+            selectUsuario.append($('<option>', { value: '', text: 'Selecione...' })); // Adiciona a opção "Todos"
 
-        usuarios.forEach(function(usuario) {
-            var option = $('<option>', { value: usuario.id, text: usuario.nome });
-            if (usuario.id == usuarioIdSelecionado) {
-                option.attr('selected', 'selected'); // Define como selecionado
-            }
-            selectUsuario.append(option);
-        });
-
-      }
+            usuarios.forEach(function(usuario) {
+                var option = $('<option>', { value: usuario.id, text: usuario.nome });
+                if (usuario.id == usuarioIdSelecionado) {
+                    option.attr('selected', 'selected'); // Define como selecionado
+                }
+                selectUsuario.append(option);
+            });
+            configurarFiltroUsuarios();
+        }
 
         function atualizarStatus(idDespesa, novoStatus) {
             if(localStorage.getItem('maiorFunc') > 1){
@@ -415,6 +416,20 @@
                 });
             }
         }
+
+        function habilitarSelectStatus() {
+            const maiorFunc = parseInt(localStorage.getItem('maiorFunc'), 10);
+
+            // Itera sobre todos os selects de status de despesa
+            $('[id^="select-status"]').each(function() {
+                if (maiorFunc < 2) {
+                    $(this).prop('disabled', true); // Desabilita o select se maiorFunc < 2
+                } else {
+                    $(this).prop('disabled', false); // Habilita o select caso contrário
+                }
+            });
+        }
+
 
         function getStatusClass(status) {
             switch (parseInt(status)) {
@@ -442,39 +457,52 @@
                 selectCentroDeCusto.append(option);
             });
         }
-      function definirCamposFiltro() {
-        if (!usuarioIdSelecionado && !centroCustoIdSelecionado && !dataInicio && !dataFim) {
-          var dataAtual = new Date();
 
-          var inicio = new Date(dataAtual.getFullYear(), dataAtual.getMonth(), 1);
-          var fim = new Date(dataAtual.getFullYear(), dataAtual.getMonth() + 1, 0);
+        function configurarFiltroUsuarios() {
+            var maiorFunc = parseInt(localStorage.getItem('maiorFunc'), 10);
+            var usuarioLogadoId = localStorage.getItem('uid');
 
-          // Convertendo as datas para o formato dd/mm/yyyy
-          let inicioFormatado = `${inicio.getDate().toString().padStart(2, '0')}/${(inicio.getMonth() + 1).toString().padStart(2, '0')}/${inicio.getFullYear()}`;
-          let fimFormatado = `${fim.getDate().toString().padStart(2, '0')}/${(fim.getMonth() + 1).toString().padStart(2, '0')}/${fim.getFullYear()}`;
-
-          $('#dataInicio').datepicker('update', inicioFormatado);
-          $('#dataFim').datepicker('update', fimFormatado);
+            // Se maiorFunc < 2, define o usuário logado no filtro e desabilita o select
+            if (maiorFunc < 2) {
+                $('#filtroUsuario').val(usuarioLogadoId); // Define o usuário logado
+                $('#filtroUsuario').prop('disabled', true); // Desabilita o select de usuários
+            } else {
+                $('#filtroUsuario').prop('disabled', false); // Habilita o select para outros usuários, caso contrário
+            }
         }
-        else{
-          if (dataInicio) {
-              $('#dataInicio').datepicker('update', dataInicio); // Formatar a data se necessário
-          }
-          if (dataFim) {
-              $('#dataFim').datepicker('update', dataFim); // Formatar a data se necessário
-          } 
-        }
-      }
+        function definirCamposFiltro() {
+            if (!usuarioIdSelecionado && !centroCustoIdSelecionado && !dataInicio && !dataFim) {
+                var dataAtual = new Date();
 
-      function validateToken() {
-          token = localStorage.getItem("jwtToken");
-          if (token) {
-              return true;
-          }
-          else{
-              window.location.href = baseUrl + "home";
-              return false;
-          }
+                var inicio = new Date(dataAtual.getFullYear(), dataAtual.getMonth(), 1);
+                var fim = new Date(dataAtual.getFullYear(), dataAtual.getMonth() + 1, 0);
+
+                // Convertendo as datas para o formato dd/mm/yyyy
+                let inicioFormatado = `${inicio.getDate().toString().padStart(2, '0')}/${(inicio.getMonth() + 1).toString().padStart(2, '0')}/${inicio.getFullYear()}`;
+                let fimFormatado = `${fim.getDate().toString().padStart(2, '0')}/${(fim.getMonth() + 1).toString().padStart(2, '0')}/${fim.getFullYear()}`;
+
+                $('#dataInicio').datepicker('update', inicioFormatado);
+                $('#dataFim').datepicker('update', fimFormatado);
+            }
+            else{
+                if (dataInicio) {
+                    $('#dataInicio').datepicker('update', dataInicio); // Formatar a data se necessário
+                }
+                if (dataFim) {
+                    $('#dataFim').datepicker('update', dataFim); // Formatar a data se necessário
+                } 
+            }
+        }
+
+        function validateToken() {
+            token = localStorage.getItem("jwtToken");
+            if (token) {
+                return true;
+            }
+            else{
+                window.location.href = baseUrl + "home";
+                return false;
+            }
         }
 
         function formatDate(dateStr) {
