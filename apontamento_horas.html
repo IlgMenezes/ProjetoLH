@@ -733,8 +733,8 @@
 			}
 
 			if (centroDeCusto && centroDeCusto.controleVSB) {
-				apontamento.NumeroFormatos = parseInt($("#numeroFormatos").val());
 				apontamento.FormatosFaturaveis = $("#formatosFaturaveis").is(":checked");
+				apontamento.NumeroFormatos = apontamento.FormatosFaturaveis ? parseInt($("#numeroFormatos").val()) : 0;
 				apontamento.tipoFormatoVSB = converterParaDecimal($("#tipoFormato").val());
 				apontamento.InicioHorasFaturaveisVSB = converterDateTime($("#inicioHorasFaturaveis").val());
 				apontamento.FimHorasFaturaveisVSB = converterDateTime($("#fimHorasFaturaveis").val());
@@ -755,20 +755,23 @@
 				},
 				body: JSON.stringify(apontamento)
 			})
-			.then(response => response.json())
+			.then(response => {
+					if (!response.ok) {
+							return response.json().then(err => {
+								alert('Erro ao salvar o centro de custo. Tente novamente, se o erro persistir contate o administrador.');
+							});
+					}
+					return response.json();
+			})
 			.then(data => {
-				// Tratar a resposta do backend, se necessÃ¡rio
 				console.log(data);
-				// Redirecionar ou exibir uma mensagem de sucesso, por exemplo
 				alert('Apontamento salvo com sucesso!');
-				$("#btnSalvar").removeAttr("disabled");
 				limparFormulario();
+				$("#btnSalvar").removeAttr("disabled");
 			})
 			.catch(error => {
-				// Tratar erros de requisiÃ§Ã£o ou do backend, se necessÃ¡rio
 				console.error(error);
 				$("#btnSalvar").removeAttr("disabled");
-				// Exibir uma mensagem de erro, por exemplo
 				alert('Ocorreu um erro ao salvar o centro de custo. Por favor, tente novamente mais tarde.');
 			});
 		}
