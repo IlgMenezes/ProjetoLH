@@ -7,15 +7,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <div class="text-white bg-primary p-3" style="font-family: Arial, sans-serif;">
-        <h2 style="font-size: 24px; display: contents;">
-            Edição de Usuário
-            <div class="float-end" style="font-size: 12px; color: lightgray;">
-                <i class="fa fa-user fa-1x"></i> 
-                <a id="usuario" href="#" style="padding-left: 4px;color: lightgray;">Nome do Usuário</a>
-            </div>
-        </h2>
-    </div>
+		<div id="menu-placeholder"></div>
     <div class="container">
         <form class="recuo_form row">
             <div class="col-sm-8">
@@ -109,6 +101,7 @@
 
     <script src="https://code.jquery.com/jquery-1.9.1.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+	<script src="menu/menu.js"></script>
     <script>
 		var urlParams = new URLSearchParams(window.location.search);
 		var token = urlParams.get('token');

@@ -12,15 +12,8 @@
 </head>
 
 <body>
-	<div class="text-white bg-primary p-3" style="font-family: Arial, sans-serif;">
-        <h2 style="font-size: 24px; display: contents;">
-            Cadastro de Apontamento
-			<div class="float-end" style="font-size: 12px; color: lightgray;">
-				<i class="fa fa-user fa-1x"></i> 
-				<a  id="nomeUsuario" href="#" style="padding-left: 4px;color: lightgray;">Ilg Menezes</a>
-			</div>
-        </h2>
-	</div>
+	<div id="menu-placeholder"></div>
+
 	<div class="container">
 		<form class="recuo_form row">
 			<div class="col-sm-6">
@@ -359,7 +352,9 @@
 	</script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-maskmoney/3.0.2/jquery.maskMoney.min.js"
 		integrity="sha512-Rdk63VC+1UYzGSgd3u2iadi0joUrcwX0IWp2rTh6KXFoAmgOjRS99Vynz1lJPT8dLjvo6JZOqpAHJyfCEZ5KoA=="
-		crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+		crossorigin="anonymous" referrerpolicy="no-referrer">
+	</script>
+	<script src="menu/menu.js"></script>
 	<script>
 		var apontamentoId;
 		var urlParams = new URLSearchParams(window.location.search);
@@ -381,7 +376,6 @@
 			if(validateToken()){
 				uid = localStorage.getItem('uid');
 				$("#nome").val(localStorage.getItem('uname'));
-				$('#nomeUsuario').text(localStorage.getItem('uname'));
 				formatHourMask()
 				configurarRadioHoras();
 				exibirOcultarSaida3();

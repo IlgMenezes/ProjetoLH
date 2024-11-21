@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu</title>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Exibe o dropdown ao passar o mouse */
+        .dropdown:hover .dropdown-menu {
+            display: block;
+            margin-top: 0; /* Remove o deslocamento para baixo */
+        }
+
+        .dropdown-menu {
+            background-color: #f8f9fa; /* Cor de fundo */
+            border: 1px solid #ddd; /* Borda ao redor */
+            border-radius: 5px; /* Bordas arredondadas */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Sombra */
+            margin-top: 5px; /* Distância entre o menu pai e o submenu */
+            padding: 0; /* Remove espaçamento interno */
+        }
+
+        .nav-link.active {
+            font-weight: bold;
+            color: #fff !important;
+            background-color: #0d6efd;
+            border-radius: 4px;
+        }
+
+        /* Estilo dos Itens do Submenu */
+        .dropdown-item {
+            color: #333; /* Cor do texto */
+            font-size: 14px; /* Tamanho da fonte */
+            padding: 10px 20px; /* Espaçamento interno */
+            transition: background-color 0.2s ease, color 0.2s ease; /* Transição suave */
+        }
+
+        /* Cor ao passar o mouse */
+        .dropdown-item:hover {
+            background-color: #007bff; /* Fundo azul */
+            color: #fff; /* Texto branco */
+        }
+        .icon-despesas {
+            display: inline-block;
+            position: relative;
+            font-size: 40px; /* Tamanho do ícone */
+            color: #007bff; /* Cor do ícone */
+            width: 60px;
+            height: 60px;
+            background-color: #e6f7ff; /* Fundo azul claro */
+            border-radius: 50%; /* Deixar circular */
+            text-align: center;
+            line-height: 60px; /* Alinhar verticalmente */
+        }
+
+        .icon-despesas i.fa-sack-dollar {
+            font-size: 20px;
+            vertical-align: middle;
+        }
+
+        .icon-despesas i.fa-coins {
+            position: absolute;
+            font-size: 16px;
+            color: #007bff;
+            bottom: 10px;
+            right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <!-- Título da página -->
+            <h2 id="page-title" class="text-white bg-primary p-2"></h2>
+
+            <!-- Botão de menu responsivo -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <!-- Menu -->
+            <div class="collapse navbar-collapse" id="navbarNav" style="padding-left: 6%; padding-top: 1%;">
+                <ul class="navbar-nav me-auto light-content services">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html" data-nivel-minimo="1">
+                            <i class="fa fa-home me-2"></i> Home
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="apontamento_horas.html" data-nivel-minimo="1">
+                            <i class="fa fa-clock me-2"></i> Apontar Horas
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="listagem_apontamentos.html" data-nivel-minimo="1">
+                            <i class="fa fa-list me-2"></i> Listagem de Horas
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="dropdownProjetos" role="button" data-bs-toggle="dropdown" aria-expanded="false" data-nivel-minimo="2">
+                            <i class="fa fa-tachometer me-2"></i> Centros de Custo
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="dropdownProjetos">
+                            <li><a class="dropdown-item" href="listagem_projetos.html" data-nivel-minimo="2">Listagem de Centros de Custo</a></li>
+                            <li><a class="dropdown-item" href="cadastro_projetos.html" data-nivel-minimo="2">Cadastro de Centro de Custo</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="listagem_usuarios.html" data-nivel-minimo="2">
+                            <i class="fa fa-user me-2"></i> Usuários
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="listagem_despesas.html" data-nivel-minimo="2">
+                            <i class="fa fa-sack-dollar"></i> Despesas
+                        </a>
+                    </li>
+                </ul>
+                <div class="d-flex">
+                    <div class="float-end" style="font-size: 12px; color: lightgray;">
+                        <i class="fa fa-user fa-1x"></i> 
+                        <a id="nomeUsuario" href="#" style="padding-left: 4px; color: lightgray;">Ilg Menezes</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+</body>
+</html>
