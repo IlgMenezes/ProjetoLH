@@ -13,7 +13,7 @@
 
 <body>
 	<div id="menu-placeholder"></div>
-
+ 
 	<div class="container">
 		<form class="recuo_form row">
 			<div class="col-sm-6">
@@ -280,7 +280,7 @@
 		}
 				
 		.required-field {
-			border: 1px solid red;
+			border: 1px solid red !important;
 			background-color: #ffe6e6;
 		}
 
@@ -406,10 +406,8 @@
 					allowNegative: false
 				});
 
-				$("#centrodecusto").on("change", function() {
-					atualizarCamposVSB();
-				});
-				
+				atualizarCamposVSB();
+
 				apontamentoId = urlParams.get('apontamentoId');
 				carregarOpcoesSelect(apontamentoId);
 				filtrarAtividades();
@@ -886,16 +884,27 @@
 		}
 
 		function atualizarCamposVSB() {
-			var controleVSBFields = $('#controleVSBFields');
-			var centroDeCusto = obterCentroDeCustoSelecionado();
-			if (centroDeCusto && centroDeCusto.controleVSB) {
-				controleVSBFields.addClass('active');
-				setTimeout(() => {
-					controleVSBFields.find('input:first').focus();
-				}, 300);
-			} else {
-				controleVSBFields.removeClass('active');
-			}
+			$("#centrodecusto").on("change", function() {
+				var controleVSBFields = $('#controleVSBFields');
+				var centroDeCusto = obterCentroDeCustoSelecionado();
+				if (centroDeCusto && centroDeCusto.controleVSB) {
+					controleVSBFields.addClass('active');
+					setTimeout(() => {
+						controleVSBFields.find('input:first').focus();
+					}, 300);
+				} else {
+					controleVSBFields.removeClass('active');
+				}
+			});
+
+			$("#formatosFaturaveis").change(function() {
+					if ($(this).is(":checked")) {
+							$("#numeroFormatos").prop("required", true);
+					} else {
+							$("#numeroFormatos").prop("required", false);
+							$("#numeroFormatos").removeClass("required-field");
+					}
+			});
 		}
 
 		function limparFormulario() {
@@ -982,6 +991,11 @@
 					formValido =  false;
 				}
 			}
+
+			if ($("#formatosFaturaveis").is(":checked") && (!$("#numeroFormatos").val() || $("#numeroFormatos").val().trim() === "")) {
+					alert("Por favor, preencha o campo 'Quantidade de Formatos' quando 'Formatos Faturáveis' estiver marcado.");
+			}
+
 			if(!formValido){
 				alert("Por favor, preencha todos os campos obrigatórios.");
 				destacarCamposRequeridosVazios();
