@@ -9,6 +9,7 @@
 	<link rel="icon" href="https://simatec.com.br/wp-content/uploads/2017/03/cropped-logotipo_Horizontal_Poli-32x32.png"
 		sizes="32x32">
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">		
+	<script src="js/error-logger.js" defer></script>
 </head>
 
 <body>
@@ -554,6 +555,18 @@
 					if (data.apontamento) {
 						preencherFormularioComDadosDeEdicao(data.apontamento);
 					}
+				},
+				error: function(jqXHR, textStatus, errorThrown) {
+					console.error('Erro no AJAX:', jqXHR, textStatus, errorThrown); // Log completo no console
+					var mensagemErro = 'Erro ao carregar os dados! Uma mensagem foi gerada para o suporte. ';
+					var mensagemErrolog = 'Erro ao carregar os dados: ' + textStatus + ': ' + errorThrown;
+					if (jqXHR.responseJSON && jqXHR.responseJSON.message) {
+						mensagemErrolog += '\nDetalhes: ' + jqXHR.responseJSON.message; // Mensagem detalhada do servidor (se disponível)
+					} else if (jqXHR.responseText) {
+						mensagemErrolog += '\nResposta: ' + jqXHR.responseText; // Corpo da resposta do servidor
+					}
+					logErrorToInsights(new Error('Erro ao carregar GetApontamentoViewModel'), mensagemErrolog);
+					alert(mensagemErro);
 				}
 			});
 		}

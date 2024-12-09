@@ -6,7 +6,8 @@
     <link rel="icon" href="https://simatec.com.br/wp-content/uploads/2017/03/cropped-logotipo_Horizontal_Poli-32x32.png" sizes="32x32">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.css">
-    <style>
+		<script src="js/error-logger.js" defer></script>
+		<style>
     /* Estilos existentes */
     .gray-icon {
         filter: grayscale(100%);
@@ -282,9 +283,17 @@
 						$('#loading').hide();
       		},
 					error: function(jqXHR, textStatus, errorThrown) {
-						console.error('Erro ao carregar apontamentos:', textStatus, errorThrown);
-						alert('Ocorreu um erro ao carregar os apontamentos. Por favor, tente novamente.' + textStatus + ': ' + errorThrown);
-						$('#loading').hide();
+						console.error('Erro no AJAX:', jqXHR, textStatus, errorThrown); // Log completo no console
+							var mensagemErro = 'Erro ao carregar os apontamentos! Uma mensagem foi gerada para o suporte. ';
+							var mensagemErrolog = 'Erro ao carregar os apontamentos: ' + textStatus + ': ' + errorThrown;
+							if (jqXHR.responseJSON && jqXHR.responseJSON.message) {
+								mensagemErrolog += '\nDetalhes: ' + jqXHR.responseJSON.message; // Mensagem detalhada do servidor (se disponível)
+							} else if (jqXHR.responseText) {
+								mensagemErrolog += '\nResposta: ' + jqXHR.responseText; // Corpo da resposta do servidor
+							}
+							logErrorToInsights(new Error('Erro ao carregar os apontamentos'), mensagemErrolog);
+							alert(mensagemErro);
+							$('#loading').hide();
 					}
       });
     }

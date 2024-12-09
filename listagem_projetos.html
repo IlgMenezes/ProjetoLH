@@ -5,7 +5,8 @@
     <title>Listagem de Centros de Custo</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
+		<script src="js/error-logger.js" defer></script>
+		<style>
 			html, body {
 				height: 100%; /* Garante que o html e o body ocupem toda a altura da janela do navegador */
 			}
@@ -120,12 +121,14 @@
 						},
 						error: function(jqXHR, textStatus, errorThrown) {
 							console.error('Erro no AJAX:', jqXHR, textStatus, errorThrown); // Log completo no console
-							var mensagemErro = 'Erro ao carregar os centros de custo: ' + textStatus + ': ' + errorThrown;
+							var mensagemErro = 'Erro ao carregar os centros de custo! Uma mensagem foi gerada para o suporte. ';
+							var mensagemErrolog = 'Erro ao carregar os centros de custo: ' + textStatus + ': ' + errorThrown;
 							if (jqXHR.responseJSON && jqXHR.responseJSON.message) {
-									mensagemErro += '\nDetalhes: ' + jqXHR.responseJSON.message; // Mensagem detalhada do servidor (se disponível)
+								mensagemErrolog += '\nDetalhes: ' + jqXHR.responseJSON.message; // Mensagem detalhada do servidor (se disponível)
 							} else if (jqXHR.responseText) {
-									mensagemErro += '\nResposta: ' + jqXHR.responseText; // Corpo da resposta do servidor
+								mensagemErrolog += '\nResposta: ' + jqXHR.responseText; // Corpo da resposta do servidor
 							}
+							logErrorToInsights(new Error('Erro ao carregar os centros de custo'), mensagemErrolog);
 							alert(mensagemErro);
 							}
 					});
