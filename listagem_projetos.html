@@ -119,8 +119,15 @@
 							$('#centroDeCusto-list').html(tabelaCentrosDeCusto);
 						},
 						error: function(jqXHR, textStatus, errorThrown) {
-							alert('Erro ao carregar os centros de custo: ' + textStatus + ': ' + errorThrown);
-						}
+							console.error('Erro no AJAX:', jqXHR, textStatus, errorThrown); // Log completo no console
+							var mensagemErro = 'Erro ao carregar os centros de custo: ' + textStatus + ': ' + errorThrown;
+							if (jqXHR.responseJSON && jqXHR.responseJSON.message) {
+									mensagemErro += '\nDetalhes: ' + jqXHR.responseJSON.message; // Mensagem detalhada do servidor (se disponível)
+							} else if (jqXHR.responseText) {
+									mensagemErro += '\nResposta: ' + jqXHR.responseText; // Corpo da resposta do servidor
+							}
+							alert(mensagemErro);
+							}
 					});
         }
 
