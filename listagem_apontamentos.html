@@ -285,13 +285,17 @@
 					error: function(jqXHR, textStatus, errorThrown) {
 						console.error('Erro no AJAX:', jqXHR, textStatus, errorThrown); // Log completo no console
 							var mensagemErro = 'Erro ao carregar os apontamentos! Uma mensagem foi gerada para o suporte. ';
-							var mensagemErrolog = 'Erro ao carregar os apontamentos: ' + textStatus + ': ' + errorThrown;
-							if (jqXHR.responseJSON && jqXHR.responseJSON.message) {
-								mensagemErrolog += '\nDetalhes: ' + jqXHR.responseJSON.message; // Mensagem detalhada do servidor (se disponível)
-							} else if (jqXHR.responseText) {
-								mensagemErrolog += '\nResposta: ' + jqXHR.responseText; // Corpo da resposta do servidor
-							}
-							logErrorToInsights(new Error('Erro ao carregar os apontamentos'), mensagemErrolog);
+							var detalhesErro = {
+									usuario: localStorage.getItem('uname') || 'Desconhecido',
+									textStatus: textStatus,
+									errorThrown: errorThrown,
+									status: jqXHR.status,
+									responseJSON: jqXHR.responseJSON || null,
+									responseText: jqXHR.responseText || 'Nenhuma resposta do servidor',
+									url: this.url
+							};
+
+							logErrorToInsights(new Error('Erro ao carregar os apontamentos'), detalhesErro);
 							alert(mensagemErro);
 							$('#loading').hide();
 					}

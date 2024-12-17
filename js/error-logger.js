@@ -55,7 +55,7 @@
 window.logErrorToInsights = function (error, additionalInfo = {}) {
   if (window.appInsights) {
       appInsights.trackException({
-          exception: error,
+          exception: "FRONT - " + error,
           severityLevel: 3, // 0 = Verbose, 3 = Warning, 4 = Error
           properties: additionalInfo,
       });
