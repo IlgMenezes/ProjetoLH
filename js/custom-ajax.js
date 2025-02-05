@@ -20,11 +20,21 @@ const RETRY_COUNT = 2;
                     if (options.success) options.success(response);
                 },
                 error: function (error) {
-                    console.error("Erro na request:", error);
+                    console.error("Erro na request:",    error);
                     if (retriesLeft > 0) {
                         console.warn(`Tentativa de fallback... Tentativas restantes: ${retriesLeft}`);
                         var fallbackUrl = url.replace(BASE_URL, FALLBACK_URL);
                         fallbackUrl = fallbackUrl.replace(BASE_URL2, FALLBACK_URL);
+
+                        if (window.logErrorToInsights) {
+                            logErrorToInsights(new Error(`Retentativa AJAX para fallback`), {
+                                originalUrl: url,
+                                fallbackUrl: fallbackUrl,
+                                remainingRetries: retriesLeft,
+                                errorDetails: error
+                            });
+                        }
+                        
                         makeRequest(fallbackUrl, retriesLeft - 1);
                     } else {
                         console.error("Todas as tentativas falharam.");
@@ -56,6 +66,16 @@ const RETRY_COUNT = 2;
                     console.warn(`Tentativa de fallback... Tentativas restantes: ${retriesLeft}`);
                     var fallbackUrl = url.replace(BASE_URL, FALLBACK_URL);
                     fallbackUrl = fallbackUrl.replace(BASE_URL2, FALLBACK_URL);
+
+                    if (window.logErrorToInsights) {
+                        logErrorToInsights(new Error(`Retentativa AJAX para fallback`), {
+                            originalUrl: url,
+                            fallbackUrl: fallbackUrl,
+                            remainingRetries: retriesLeft,
+                            errorDetails: error
+                        });
+                    }
+
                     return makeRequest(fallbackUrl, retriesLeft - 1);
                 }
                 throw error;
