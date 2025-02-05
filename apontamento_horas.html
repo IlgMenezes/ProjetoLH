@@ -25,15 +25,27 @@
 					</div>
 				</div>
 
-				<div class="mb-3 row">
-					<label for="data" class="form-label col-sm-4">Data:</label>
-					<div class="col-sm-8">
+				<div class="mb-3 row align-items-center">
+					<div class="col-md-4 d-flex align-items-center">
+							<label for="data" class="form-label me-2">Data:</label>
+					</div>
+			
+					<div class="col-md-8 d-flex align-items-center">
 						<div class="input-group">
 							<input type="text" id="data" name="data" class="form-control" placeholder="DD/MM/AAAA" required>
-							<button class="btn btn-outline-secondary" type="button" id="calendario"><i class="bi bi-calendar"></i></button>
-						</div>
+							<button class="btn btn-outline-secondary" type="button" id="calendario">
+									<i class="bi bi-calendar"></i>
+							</button>
 					</div>
-				</div>
+							<label for="local" class="form-label me-2" style="padding-left: 10%; padding-right: 3%">Local:</label>
+							<select id="local" name="local" class="form-select" style="padding-left: 3%" required>
+									<option value="">Selecione...</option>
+									<option value="1">Escritório</option>
+									<option value="2">Campo</option>
+							</select>
+					</div>
+			</div>
+			
 
 				<div class="mb-3 row">
 					<label for="setor" class="form-label col-sm-4">Setor:</label>
@@ -356,6 +368,8 @@
 		crossorigin="anonymous" referrerpolicy="no-referrer">
 	</script>
 	<script src="menu/menu.js"></script>
+	<script src="js/custom-ajax.js"></script>
+
 	<script>
 		var apontamentoId;
 		var urlParams = new URLSearchParams(window.location.search);
@@ -584,6 +598,10 @@
 			$("#descricaoObservacao").val(apontamento.observacao);
 			$("#horasTrabalhadasInput").val(apontamento.horasTrabalhadas);
 
+			if (apontamento.local) {
+					$("#local").val(apontamento.local).trigger('change'); // Define o valor no <select>
+			}
+
 			$('#numeroFormatos').val(apontamento.numeroFormatos || '');
 			$('#formatosFaturaveis').prop('checked', apontamento.formatosFaturaveis || false);
 			$('#tipoFormato').val(apontamento.tipoFormatoVSB || '');
@@ -711,6 +729,7 @@
 			var funcionario = { id: parseInt(uid) };
 			var horasTrabalhadas = null;
 			var descricaoObservacao = $("#descricaoObservacao").val();
+			var local = $("#local").val();
 			
 			var tipoApontamento = document.querySelector('input[name="tipoApontamento"]:checked').value;
 			
@@ -733,7 +752,8 @@
 				Registros: registros,
 				Despesas: despesasInseridas,
 				HorasTrabalhadas: horasTrabalhadas,
-				Observacao: descricaoObservacao
+				Observacao: descricaoObservacao,
+				Local: local
 			};
 			
 			if (apontamentoId) {
@@ -767,15 +787,15 @@
 					if (!response.ok) {
 							return response.json().then(err => {
 								alert('Erro ao salvar o centro de custo. Tente novamente, se o erro persistir contate o administrador.');
+								console.log(response);
 							});
 					}
+					else{
+						alert('Apontamento salvo com sucesso!');
+						limparFormulario();
+						$("#btnSalvar").removeAttr("disabled");
+					}
 					return response.json();
-			})
-			.then(data => {
-				console.log(data);
-				alert('Apontamento salvo com sucesso!');
-				limparFormulario();
-				$("#btnSalvar").removeAttr("disabled");
 			})
 			.catch(error => {
 				console.error(error);
@@ -940,6 +960,7 @@
 			$("#atividade").prop('selectedIndex', -1);
 			$("#tipoDespesa").prop('selectedIndex', -1);
 			$("#centrodecusto").prop('selectedIndex', -1);
+			$("#local").prop('selectedIndex', -1);
 
 			$("#tipoFormato").prop('selectedIndex', -1);
 			$("#formatosFaturaveis").prop('checked', false);
