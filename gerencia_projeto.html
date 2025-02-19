@@ -5,6 +5,7 @@
     <title>Detalhes do Centro de Custo</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="js/error-logger.js" defer></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -168,6 +169,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-1.9.1.js"></script>
     <script src="menu/menu.js"></script>
+    <script src="js/custom-ajax.js"></script>
     <script>
         var baseUrl;
         var urlParams = new URLSearchParams(window.location.search);
@@ -214,6 +216,16 @@
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
                     alert('Erro ao carregar os detalhes do centro de custo: ' + textStatus);
+                    var detalhesErro = {
+									usuario: localStorage.getItem('uname') || 'Desconhecido',
+									textStatus: textStatus,
+									errorThrown: errorThrown,
+									status: jqXHR.status,
+									responseJSON: jqXHR.responseJSON || null,
+									responseText: jqXHR.responseText || 'Nenhuma resposta do servidor',
+									url: this.url
+							};
+                    logErrorToInsights(new Error('Erro ao carregar os detalhes do CentroDeCusto: ' + idCentroDeCusto), detalhesErro);
                 }
             });
         }
