@@ -8,41 +8,138 @@
 		<script src="js/error-logger.js" defer></script>
 		<style>
 			html, body {
-				height: 100%; /* Garante que o html e o body ocupem toda a altura da janela do navegador */
+				height: 100%;
 			}
+			
+			.main-container { 
+				margin: 20px; 
+				max-height: 70%;
+			}
+			
+			.scrollable-table {
+				max-height: 500px;
+				overflow-y: auto;
+				margin-bottom: 20px;
+			}
+			
+			.scrollable-table table {
+				width: 100%;
+				border-collapse: collapse;
+			}
+			
+			.scrollable-table thead th {
+				position: sticky;
+				top: 0;
+				background-color: white;
+				z-index: 1;
+			}
+			
 			.btn-spacing { 
 				margin-right: 5px;
-				}
-			.btn-voltar{
+			}
+			
+			.btn-voltar {
 				margin-top: 20px;
 			}
-			.main-container { margin: 20px; max-height: 70%;}
-			.scrollable-table {
-					overflow-y: auto; /* Habilita rolagem vertical se necessário */
-					max-height: 63vh; /* Altura máxima do contêiner, ajuste conforme necessário */
+			
+			/* Estilos para as linhas de agrupamento */
+			.year-row, .client-row, .manager-row {
+				cursor: pointer;
+				background-color: #f8f9fa;
+				font-weight: bold;
 			}
-			.scrollable-table table {
-					width: 100%;
-					border-collapse: collapse;
+			
+			.year-row:hover, .client-row:hover, .manager-row:hover {
+				background-color: #e9ecef;
 			}
-			.scrollable-table thead th {
-					position: sticky;
-					top: 0;
-					background-color: white; /* ou a cor de fundo que desejar */
-					z-index: 1;
+			
+			.year-row td, .client-row td, .manager-row td {
+				padding: 10px;
 			}
-    </style>
+			
+			.project-row {
+				display: none;
+			}
+			
+			/* Estilos para ícones de expansão/colapso */
+			.chevron {
+				transition: transform 0.3s ease;
+			}
+			
+			.collapsed .chevron {
+				transform: rotate(-90deg);
+			}
+			
+			.badge {
+				margin-left: 8px;
+				font-weight: normal;
+			}
+			
+			/* Estilos para o grupo de radio buttons */
+			.radio-group-container {
+				background-color: #f8f9fa;
+				border-color: #dee2e6 !important;
+				box-shadow: 0 1px 3px rgba(0,0,0,.1);
+				transition: all 0.2s ease;
+			}
+			
+			.radio-group-container:hover {
+				background-color: #e9ecef;
+			}
+			
+			.form-check-input:checked {
+				background-color: #0d6efd;
+				border-color: #0d6efd;
+			}
+			
+			.form-check-label {
+				cursor: pointer;
+				transition: color 0.2s ease;
+			}
+			
+			.form-check-input:checked + .form-check-label {
+				font-weight: 600;
+				color: #0d6efd;
+			}
+		</style>
 </head>
 <body>
 	<div id="menu-placeholder"></div>
 
     <!-- Área de filtragem -->
     <div class="container mt-4 mb-4">
-        <div class="d-flex justify-content-end">
-        <button type="button" class="btn btn-primary" onclick="adicionarCentroDeCusto()">
-            <i class="fa fa-plus"></i> Adicionar
-        </button>
-    </div>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="d-flex align-items-center">
+                <div class="btn-group radio-group-container p-2 rounded border" role="group" aria-label="Opções de agrupamento">
+                    <span class="me-2 fw-bold">Agrupar por:</span>
+                    <div class="form-check form-switch me-3">
+                        <input class="form-check-input" type="checkbox" id="grupoAno">
+                        <label class="form-check-label" for="grupoAno">Ano</label>
+                    </div>
+                    <div class="form-check form-switch me-3">
+                        <input class="form-check-input" type="checkbox" id="grupoCliente">
+                        <label class="form-check-label" for="grupoCliente">Cliente</label>
+                    </div>
+                    <div class="form-check form-switch me-3">
+                        <input class="form-check-input" type="checkbox" id="grupoGerente">
+                        <label class="form-check-label" for="grupoGerente">Gerente</label>
+                    </div>
+                </div>
+            </div>
+            <button type="button" class="btn btn-primary" onclick="adicionarCentroDeCusto()">
+                <i class="fa fa-plus"></i> Adicionar
+            </button>
+        </div>
+        
+        <!-- Campo de pesquisa -->
+        <div class="input-group mb-3">
+            <span class="input-group-text bg-primary text-white">
+                <i class="fa fa-search"></i>
+            </span>
+            <input type="text" class="form-control" id="campoPesquisa" placeholder="Pesquisar por nome do centro de custo, cliente ou palavras-chave..." aria-label="Pesquisar">
+            <button class="btn btn-outline-secondary" type="button" id="btnPesquisar" onclick="pesquisarCentrosDeCusto()">Pesquisar</button>
+            <button class="btn btn-outline-secondary" type="button" id="btnLimparPesquisa" onclick="limparPesquisa()">Limpar</button>
+        </div>
     </div>
 
     <div class="main-container">
@@ -80,6 +177,8 @@
         var token = urlParams.get('token'); 
 				var baseUrl;
 				var maiorFunc = 0;
+				var todosCentrosDeCusto = [];
+				var anoFiltrado = null;
 
         $(document).ready(function() {
 					if (window.location.hostname.includes("localhost")) {
@@ -93,32 +192,86 @@
 						carregarCentrosDeCusto();
 					}
 
+					// Event delegation para os cliques nas linhas de agrupamento
+					$(document).on('click', '.year-row', function() {
+						var year = $(this).data('year');
+						if ($(this).hasClass('collapsed')) {
+							// Expandir
+							$(this).removeClass('collapsed');
+							$(this).find('.chevron').css('transform', 'rotate(0deg)');
+							$('.project-row[data-year="' + year + '"]').show();
+						} else {
+							// Colapsar
+							$(this).addClass('collapsed');
+							$(this).find('.chevron').css('transform', 'rotate(-90deg)');
+							$('.project-row[data-year="' + year + '"]').hide();
+						}
+					});
+					
+					$(document).on('click', '.client-row', function() {
+						var client = $(this).data('client');
+						if ($(this).hasClass('collapsed')) {
+							// Expandir
+							$(this).removeClass('collapsed');
+							$(this).find('.chevron').css('transform', 'rotate(0deg)');
+							$('.project-row[data-client="' + client + '"]').show();
+						} else {
+							// Colapsar
+							$(this).addClass('collapsed');
+							$(this).find('.chevron').css('transform', 'rotate(-90deg)');
+							$('.project-row[data-client="' + client + '"]').hide();
+						}
+					});
+					
+					$(document).on('click', '.manager-row', function() {
+						var manager = $(this).data('manager');
+						if ($(this).hasClass('collapsed')) {
+							// Expandir
+							$(this).removeClass('collapsed');
+							$(this).find('.chevron').css('transform', 'rotate(0deg)');
+							$('.project-row[data-manager="' + manager + '"]').show();
+						} else {
+							// Colapsar
+							$(this).addClass('collapsed');
+							$(this).find('.chevron').css('transform', 'rotate(-90deg)');
+							$('.project-row[data-manager="' + manager + '"]').hide();
+						}
+					});
+
+					// Adicionar event listener para o campo de pesquisa para pesquisar ao pressionar Enter
+					$("#campoPesquisa").keypress(function(e) {
+						if(e.which == 13) { // 13 é o código para a tecla Enter
+							pesquisarCentrosDeCusto();
+						}
+					});
+
+					// Listener para os toggles de agrupamento
+					$('#grupoAno, #grupoCliente, #grupoGerente').on('change', function() {
+						// Se este toggle foi ativado, desativa os outros
+						if ($(this).is(':checked')) {
+							$('.form-check-input').not(this).prop('checked', false);
+						}
+						
+						// Determina qual opção está selecionada
+						var selectedOption = null;
+						if ($('#grupoAno').is(':checked')) selectedOption = 'ano';
+						else if ($('#grupoCliente').is(':checked')) selectedOption = 'cliente';
+						else if ($('#grupoGerente').is(':checked')) selectedOption = 'gerente';
+						
+						// Renderiza os dados com ou sem agrupamento
+						renderizarCentrosDeCusto(todosCentrosDeCusto, selectedOption);
+					});
         });
 
         function carregarCentrosDeCusto() {
+            $('#loading').show();
             $.ajax({
 							url: baseUrl + 'api/CentroDeCusto/GetListagemCentroDeCusto/',
 							type: 'GET',
 						success: function(data) {
-							var tabelaCentrosDeCusto = '';
-							data.forEach(function(centro) {
-								tabelaCentrosDeCusto += '<tr>';
-								tabelaCentrosDeCusto += '<td>' + centro.centroDeCusto.nomeCentroDeCusto + '</td>';
-								tabelaCentrosDeCusto += '<td>' + centro.nomeGerente + '</td>'; // Substitua pelo método correto para obter o nome do gerente
-								tabelaCentrosDeCusto += '<td>' + centro.centroDeCusto.cliente + '</td>';
-								tabelaCentrosDeCusto += '<td>' + formatDateToShow(centro.centroDeCusto.dataInicio) + '</td>';
-								tabelaCentrosDeCusto += '<td class="text-center">' + centro.horasTotais + '</td>';
-								tabelaCentrosDeCusto += '<td class="text-center">' + centro.horasTotaisApontadas.toFixed(2) + '</td>';
-								tabelaCentrosDeCusto += '<td>';
-								if(maiorFunc >= 2){
-									tabelaCentrosDeCusto += '<button class="btn btn-warning btn-sm btn-spacing" onclick="gerenciarCentroDeCusto('+ centro.centroDeCusto.id +')" data-bs-toggle="tooltip" data-bs-placement="top" title="Gerenciar Centro de Custo"><i class="fa fa-cog"></i></button>';
-								}
-								tabelaCentrosDeCusto += '<button class="btn btn-primary btn-sm btn-spacing" onclick="editarCentroDeCusto('+ centro.centroDeCusto.id +')"><i class="fa fa-edit"></i></button>';
-								tabelaCentrosDeCusto += '<button class="btn btn-danger btn-sm" onclick="excluirCentroDeCusto('+ centro.centroDeCusto.id +')"><i class="fa fa-trash"></i></button>';
-								tabelaCentrosDeCusto += '</td>';
-								tabelaCentrosDeCusto += '</tr>';
-							});
-							$('#centroDeCusto-list').html(tabelaCentrosDeCusto);
+							todosCentrosDeCusto = data;
+							renderizarCentrosDeCusto(data);
+							$('#loading').hide();
 						},
 						error: function(jqXHR, textStatus, errorThrown) {
 							console.error('Erro no AJAX:', jqXHR, textStatus, errorThrown); // Log completo no console
@@ -134,12 +287,207 @@
 							};
 							logErrorToInsights(new Error('Erro ao carregar os centros de custo'), detalhesErro);
 							alert(mensagemErro);
+							$('#loading').hide();
 							}
 					});
         }
 
-				function gerenciarCentroDeCusto(idCentroDeCusto) {
-					window.location.href = './gerencia_projeto.html?idCentroDeCusto=' + idCentroDeCusto;
+		function renderizarCentrosDeCusto(data, groupingOption = null) {
+			var tabelaCentrosDeCusto = '';
+			
+			// Se não houver opção de agrupamento selecionada, mostra a lista plana
+			if (!groupingOption) {
+				data.forEach(function(centro) {
+					tabelaCentrosDeCusto += '<tr class="project-row" style="display: table-row;">';
+					tabelaCentrosDeCusto += '<td>' + centro.centroDeCusto.nomeCentroDeCusto + '</td>';
+					tabelaCentrosDeCusto += '<td>' + centro.nomeGerente + '</td>';
+					tabelaCentrosDeCusto += '<td>' + centro.centroDeCusto.cliente + '</td>';
+					tabelaCentrosDeCusto += '<td>' + formatDateToShow(centro.centroDeCusto.dataInicio) + '</td>';
+					tabelaCentrosDeCusto += '<td class="text-center">' + centro.horasTotais + '</td>';
+					tabelaCentrosDeCusto += '<td class="text-center">' + centro.horasTotaisApontadas.toFixed(2) + '</td>';
+					tabelaCentrosDeCusto += '<td>';
+					if(maiorFunc >= 2){
+						tabelaCentrosDeCusto += '<button class="btn btn-warning btn-sm btn-spacing" onclick="gerenciarCentroDeCusto('+ centro.centroDeCusto.id +')" data-bs-toggle="tooltip" data-bs-placement="top" title="Gerenciar Centro de Custo"><i class="fa fa-cog"></i></button>';
+					}
+					tabelaCentrosDeCusto += '<button class="btn btn-primary btn-sm btn-spacing" onclick="editarCentroDeCusto('+ centro.centroDeCusto.id +')"><i class="fa fa-edit"></i></button>';
+					tabelaCentrosDeCusto += '<button class="btn btn-danger btn-sm" onclick="excluirCentroDeCusto('+ centro.centroDeCusto.id +')"><i class="fa fa-trash"></i></button>';
+					tabelaCentrosDeCusto += '</td>';
+					tabelaCentrosDeCusto += '</tr>';
+				});
+			} else if (groupingOption === 'ano') {
+				// Agrupar por ano
+				var projetosPorAno = {};
+				
+				data.forEach(function(centro) {
+					var dataInicio = new Date(centro.centroDeCusto.dataInicio);
+					var ano = dataInicio.getFullYear().toString();
+					
+					if (!projetosPorAno[ano]) {
+						projetosPorAno[ano] = [];
+					}
+					
+					projetosPorAno[ano].push(centro);
+				});
+				
+				// Ordenar anos em ordem decrescente (mais recente primeiro)
+				var anos = Object.keys(projetosPorAno).sort(function(a, b) {
+					return parseInt(b) - parseInt(a); // Ordem decrescente
+				});
+				
+				// Para cada ano, criar uma linha de ano e as linhas de projetos
+				anos.forEach(function(ano) {
+					var projetosDoAno = projetosPorAno[ano];
+					
+					// Linha do ano (sempre visível)
+					tabelaCentrosDeCusto += '<tr class="year-row collapsed" data-year="' + ano + '">';
+					tabelaCentrosDeCusto += '<td colspan="7">';
+					tabelaCentrosDeCusto += '<i class="fa fa-chevron-down chevron" style="margin-right: 10px;"></i>';
+					tabelaCentrosDeCusto += 'Projetos de ' + ano + ' <span class="badge bg-secondary">' + projetosDoAno.length + '</span>';
+					tabelaCentrosDeCusto += '</td>';
+					tabelaCentrosDeCusto += '</tr>';
+					
+					// Linhas de projetos do ano (inicialmente ocultas)
+					projetosDoAno.forEach(function(centro) {
+						tabelaCentrosDeCusto += '<tr class="project-row" data-year="' + ano + '">';
+						tabelaCentrosDeCusto += '<td>' + centro.centroDeCusto.nomeCentroDeCusto + '</td>';
+						tabelaCentrosDeCusto += '<td>' + centro.nomeGerente + '</td>';
+						tabelaCentrosDeCusto += '<td>' + centro.centroDeCusto.cliente + '</td>';
+						tabelaCentrosDeCusto += '<td>' + formatDateToShow(centro.centroDeCusto.dataInicio) + '</td>';
+						tabelaCentrosDeCusto += '<td class="text-center">' + centro.horasTotais + '</td>';
+						tabelaCentrosDeCusto += '<td class="text-center">' + centro.horasTotaisApontadas.toFixed(2) + '</td>';
+						tabelaCentrosDeCusto += '<td>';
+						if(maiorFunc >= 2){
+							tabelaCentrosDeCusto += '<button class="btn btn-warning btn-sm btn-spacing" onclick="gerenciarCentroDeCusto('+ centro.centroDeCusto.id +')" data-bs-toggle="tooltip" data-bs-placement="top" title="Gerenciar Centro de Custo"><i class="fa fa-cog"></i></button>';
+						}
+						tabelaCentrosDeCusto += '<button class="btn btn-primary btn-sm btn-spacing" onclick="editarCentroDeCusto('+ centro.centroDeCusto.id +')"><i class="fa fa-edit"></i></button>';
+						tabelaCentrosDeCusto += '<button class="btn btn-danger btn-sm" onclick="excluirCentroDeCusto('+ centro.centroDeCusto.id +')"><i class="fa fa-trash"></i></button>';
+						tabelaCentrosDeCusto += '</td>';
+						tabelaCentrosDeCusto += '</tr>';
+					});
+				});
+			} 
+			else if (groupingOption === 'cliente') {
+				// Agrupar por cliente
+				var projetosPorCliente = {};
+				
+				data.forEach(function(centro) {
+					// Normaliza o nome do cliente: remove espaços extras, converte para maiúsculas
+					var clienteOriginal = centro.centroDeCusto.cliente || 'Sem Cliente';
+					var clienteNormalizado = clienteOriginal.toString().trim().toUpperCase().replace(/\s+/g, ' ');
+					
+					// Armazena o nome normalizado para agrupamento, mas mantém o nome original para exibição
+					if (!projetosPorCliente[clienteNormalizado]) {
+						projetosPorCliente[clienteNormalizado] = {
+							projetos: [],
+							nomeOriginal: clienteOriginal
+						};
+					}
+					
+					projetosPorCliente[clienteNormalizado].projetos.push(centro);
+				});
+				
+				// Ordenar clientes em ordem alfabética
+				var clientes = Object.keys(projetosPorCliente).sort();
+				
+				// Para cada cliente, criar uma linha e as linhas de projetos
+				clientes.forEach(function(clienteNormalizado) {
+					var infoCliente = projetosPorCliente[clienteNormalizado];
+					var projetosDoCliente = infoCliente.projetos;
+					var nomeExibicao = infoCliente.nomeOriginal;
+					
+					// Linha do cliente
+					tabelaCentrosDeCusto += '<tr class="client-row collapsed" data-client="' + clienteNormalizado + '">';
+					tabelaCentrosDeCusto += '<td colspan="7">';
+					tabelaCentrosDeCusto += '<i class="fa fa-chevron-down chevron" style="margin-right: 10px;"></i>';
+					tabelaCentrosDeCusto += 'Cliente: ' + nomeExibicao + ' <span class="badge bg-secondary">' + projetosDoCliente.length + '</span>';
+					tabelaCentrosDeCusto += '</td>';
+					tabelaCentrosDeCusto += '</tr>';
+					
+					// Linhas de projetos do cliente (inicialmente ocultas)
+					projetosDoCliente.forEach(function(centro) {
+						tabelaCentrosDeCusto += '<tr class="project-row" data-client="' + clienteNormalizado + '">';
+						tabelaCentrosDeCusto += '<td>' + centro.centroDeCusto.nomeCentroDeCusto + '</td>';
+						tabelaCentrosDeCusto += '<td>' + centro.nomeGerente + '</td>';
+						tabelaCentrosDeCusto += '<td>' + centro.centroDeCusto.cliente + '</td>';
+						tabelaCentrosDeCusto += '<td>' + formatDateToShow(centro.centroDeCusto.dataInicio) + '</td>';
+						tabelaCentrosDeCusto += '<td class="text-center">' + centro.horasTotais + '</td>';
+						tabelaCentrosDeCusto += '<td class="text-center">' + centro.horasTotaisApontadas.toFixed(2) + '</td>';
+						tabelaCentrosDeCusto += '<td>';
+						if(maiorFunc >= 2){
+							tabelaCentrosDeCusto += '<button class="btn btn-warning btn-sm btn-spacing" onclick="gerenciarCentroDeCusto('+ centro.centroDeCusto.id +')" data-bs-toggle="tooltip" data-bs-placement="top" title="Gerenciar Centro de Custo"><i class="fa fa-cog"></i></button>';
+						}
+						tabelaCentrosDeCusto += '<button class="btn btn-primary btn-sm btn-spacing" onclick="editarCentroDeCusto('+ centro.centroDeCusto.id +')"><i class="fa fa-edit"></i></button>';
+						tabelaCentrosDeCusto += '<button class="btn btn-danger btn-sm" onclick="excluirCentroDeCusto('+ centro.centroDeCusto.id +')"><i class="fa fa-trash"></i></button>';
+						tabelaCentrosDeCusto += '</td>';
+						tabelaCentrosDeCusto += '</tr>';
+					});
+				});
+			}
+			else if (groupingOption === 'gerente') {
+				var projetosPorGerente = {};
+				var gerentes = [];
+				
+				// Agrupar os projetos por gerente
+				data.forEach(function(centro) {
+					var gerenteOriginal = centro.nomeGerente || "Sem Gerente";
+					var gerenteNormalizado = gerenteOriginal.toString().trim().toUpperCase().replace(/\s+/g, ' ');
+					
+					// Verificar se esse gerente já existe no objeto de agrupamento
+					if (!projetosPorGerente[gerenteNormalizado]) {
+						projetosPorGerente[gerenteNormalizado] = {
+							nomeOriginal: gerenteOriginal,
+							projetos: []
+						};
+						gerentes.push(gerenteNormalizado);
+					}
+					
+					// Adicionar o projeto à lista de projetos do gerente
+					projetosPorGerente[gerenteNormalizado].projetos.push(centro);
+				});
+				
+				// Ordenar gerentes alfabeticamente
+				gerentes.sort();
+				
+				// Para cada gerente, criar uma linha e as linhas de projetos
+				gerentes.forEach(function(gerenteNormalizado) {
+					var infoGerente = projetosPorGerente[gerenteNormalizado];
+					var projetosDoGerente = infoGerente.projetos;
+					var nomeExibicao = infoGerente.nomeOriginal;
+					
+					// Linha do gerente
+					tabelaCentrosDeCusto += '<tr class="manager-row collapsed" data-manager="' + gerenteNormalizado + '">';
+					tabelaCentrosDeCusto += '<td colspan="7">';
+					tabelaCentrosDeCusto += '<i class="fa fa-chevron-down chevron" style="margin-right: 10px;"></i>';
+					tabelaCentrosDeCusto += 'Gerente: ' + nomeExibicao + ' <span class="badge bg-secondary">' + projetosDoGerente.length + '</span>';
+					tabelaCentrosDeCusto += '</td>';
+					tabelaCentrosDeCusto += '</tr>';
+					
+					// Linhas de projetos do gerente (inicialmente ocultas)
+					projetosDoGerente.forEach(function(centro) {
+						tabelaCentrosDeCusto += '<tr class="project-row" data-manager="' + gerenteNormalizado + '">';
+						tabelaCentrosDeCusto += '<td>' + centro.centroDeCusto.nomeCentroDeCusto + '</td>';
+						tabelaCentrosDeCusto += '<td>' + centro.nomeGerente + '</td>';
+						tabelaCentrosDeCusto += '<td>' + centro.centroDeCusto.cliente + '</td>';
+						tabelaCentrosDeCusto += '<td>' + formatDateToShow(centro.centroDeCusto.dataInicio) + '</td>';
+						tabelaCentrosDeCusto += '<td class="text-center">' + centro.horasTotais + '</td>';
+						tabelaCentrosDeCusto += '<td class="text-center">' + centro.horasTotaisApontadas.toFixed(2) + '</td>';
+						tabelaCentrosDeCusto += '<td>';
+						if(maiorFunc >= 2){
+							tabelaCentrosDeCusto += '<button class="btn btn-warning btn-sm btn-spacing" onclick="gerenciarCentroDeCusto('+ centro.centroDeCusto.id +')" data-bs-toggle="tooltip" data-bs-placement="top" title="Gerenciar Centro de Custo"><i class="fa fa-cog"></i></button>';
+						}
+						tabelaCentrosDeCusto += '<button class="btn btn-primary btn-sm btn-spacing" onclick="editarCentroDeCusto('+ centro.centroDeCusto.id +')"><i class="fa fa-edit"></i></button>';
+						tabelaCentrosDeCusto += '<button class="btn btn-danger btn-sm" onclick="excluirCentroDeCusto('+ centro.centroDeCusto.id +')"><i class="fa fa-trash"></i></button>';
+						tabelaCentrosDeCusto += '</td>';
+						tabelaCentrosDeCusto += '</tr>';
+					});
+				});
+			}
+			
+			$('#centroDeCusto-list').html(tabelaCentrosDeCusto);
+		}
+
+		function gerenciarCentroDeCusto(idCentroDeCusto) {
+			window.location.href = './gerencia_projeto.html?idCentroDeCusto=' + idCentroDeCusto;
         }
 
         function editarCentroDeCusto(idCentroDeCusto) {
@@ -190,6 +538,74 @@
             window.location.href = "./cadastro_projetos.html";
         }
 		
+		// Função para pesquisar e filtrar os centros de custo
+		function pesquisarCentrosDeCusto() {
+			var termoPesquisa = $("#campoPesquisa").val().toLowerCase().trim();
+			
+			if (termoPesquisa === "") {
+				// Se o campo estiver vazio, mostrar todos os centros de custo
+				renderizarCentrosDeCusto(todosCentrosDeCusto, $('input[name="grupoOpcao"]:checked').val());
+				return;
+			}
+			
+			var centrosFiltrados = todosCentrosDeCusto.filter(function(centro) {
+				// Verificar se o termo de pesquisa está contido no nome do centro ou no cliente
+				var matchNome = centro.centroDeCusto.nomeCentroDeCusto.toLowerCase().includes(termoPesquisa);
+				var matchCliente = centro.centroDeCusto.cliente && centro.centroDeCusto.cliente.toLowerCase().includes(termoPesquisa);
+				
+				// Verificar nas palavras-chave (assuntos)
+				var matchAssuntos = false;
+				if (centro.assuntos && Array.isArray(centro.assuntos)) {
+					matchAssuntos = centro.assuntos.some(function(assunto) {
+						return assunto.descricao.toLowerCase().includes(termoPesquisa);
+					});
+				}
+				
+				return matchNome || matchCliente || matchAssuntos;
+			});
+			
+			// Renderizar apenas os centros filtrados
+			renderizarCentrosFiltrados(centrosFiltrados);
+		}
+		
+		// Função para limpar a pesquisa e mostrar todos os centros
+		function limparPesquisa() {
+			$("#campoPesquisa").val("");
+			renderizarCentrosDeCusto(todosCentrosDeCusto, $('input[name="grupoOpcao"]:checked').val());
+		}
+		
+		// Função para renderizar apenas os centros filtrados sem agrupamento
+		function renderizarCentrosFiltrados(centrosFiltrados) {
+			var tableBody = $('#centroDeCusto-list');
+			tableBody.empty();
+			
+			if (centrosFiltrados.length === 0) {
+				tableBody.append('<tr><td colspan="7" class="text-center">Nenhum centro de custo encontrado.</td></tr>');
+				return;
+			}
+			
+			// Adicionar os centros de custo diretamente à tabela sem agrupamento
+			centrosFiltrados.forEach(function(centro) {
+				var row = `<tr class="project-row" style="display: table-row;">
+					<td>${centro.centroDeCusto.nomeCentroDeCusto}</td>
+					<td>${centro.nomeGerente || 'Sem Gerente'}</td>
+					<td>${centro.centroDeCusto.cliente || 'Sem Cliente'}</td>
+					<td>${formatDateToShow(centro.centroDeCusto.dataInicio)}</td>
+					<td class="text-center">${centro.horasTotais}</td>
+					<td class="text-center">${centro.horasTotaisApontadas.toFixed(2)}</td>
+					<td>
+						${maiorFunc >= 2 ? '<button class="btn btn-warning btn-sm btn-spacing" onclick="gerenciarCentroDeCusto('+ centro.centroDeCusto.id +')" data-bs-toggle="tooltip" data-bs-placement="top" title="Gerenciar Centro de Custo"><i class="fa fa-cog"></i></button>' : ''}
+						<button class="btn btn-primary btn-sm btn-spacing" onclick="editarCentroDeCusto(${centro.centroDeCusto.id})">
+							<i class="fa fa-edit"></i>
+						</button>
+						<button class="btn btn-danger btn-sm" onclick="excluirCentroDeCusto(${centro.centroDeCusto.id})">
+							<i class="fa fa-trash"></i>
+						</button>
+					</td>
+				</tr>`;
+				tableBody.append(row);
+			});
+		}
     </script>
 </body>
 </html>

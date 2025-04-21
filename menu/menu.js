@@ -18,7 +18,7 @@ $(document).ready(function () {
           "listagem_usuarios.html": "Listagem de Usuários",
           
       };
-      const pageTitle = titles[currentPage] || "SGH - SIMATEC";
+      const pageTitle = titles[currentPage] || "SGH - Simatec";
       $("#page-title").text(pageTitle);
 
       $(".nav-link").each(function () {

@@ -7,6 +7,8 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="icon" href="https://simatec.com.br/wp-content/uploads/2017/03/cropped-logotipo_Horizontal_Poli-32x32.png" sizes="32x32">
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+	<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+	<script src="js/error-logger.js" defer></script>
 </head>
 <body>
 		<div id="menu-placeholder"></div>
@@ -80,6 +82,20 @@
             </div>
             <div id="CadastroEquipes" class="col-sm-8">
 				<form id="formEquipe">
+					<div class="mb-3 row">
+						<label for="assuntos" class="form-label col-sm-2">Palavras-chave:</label>
+						<div class="col-sm-6">
+							<div class="input-group">
+								<input type="text" id="assuntoInput" class="form-control" placeholder="Digite uma palavra-chave do projeto">
+								<button class="btn btn-outline-secondary" type="button" id="btnAdicionarAssunto">
+										<i class="fa fa-plus"></i>
+								</button>
+							</div>
+							<div id="assuntosContainer" class="mt-2">
+								<!-- Os assuntos serão exibidos aqui como tags -->
+							</div>
+						</div>
+					</div>
 					<div class="mb-3 row">
 						<label for="equipe" class="form-label col-sm-2">Equipe:</label>
 						<div class="col-sm-6">
@@ -352,16 +368,38 @@ input:checked + .slider:before {
     transform: translateX(26px);
 }
 
+        .ui-autocomplete {
+            max-height: 200px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            z-index: 1000;
+        }
+        .assunto-tag {
+            display: inline-block;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            padding: 5px 10px;
+            margin: 3px;
+            font-size: 14px;
+            cursor: default;
+        }
+        .assunto-tag .remove-assunto {
+            margin-left: 5px;
+            cursor: pointer;
+            color: #dc3545;
+        }
+        .assunto-tag .remove-assunto:hover {
+            color: #bd2130;
+        }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-    <script src="https://code.jquery.com/jquery-1.9.1.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/js/bootstrap-datepicker.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/locales/bootstrap-datepicker.pt-BR.min.js"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-maskmoney/3.0.2/jquery.maskMoney.min.js" integrity="sha512-Rdk63VC+1UYzGSgd3u2iadi0joUrcwX0IWp2rTh6KXFoAmgOjRS99Vynz1lJPT8dLjvo6JZOqpAHJyfCEZ5KoA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
-	<script src="menu/menu.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap-datepicker@1.10.0/dist/js/bootstrap-datepicker.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap-datepicker@1.10.0/dist/locales/bootstrap-datepicker.pt-BR.min.js"></script>
+    <script src="menu/menu.js"></script>
+    <script src="js/custom-ajax.js"></script>
     <script>
 		var idCentroDeCusto
 		var todasAtividades = [];
@@ -370,6 +408,8 @@ input:checked + .slider:before {
 		var urlParams = new URLSearchParams(window.location.search);
 		var token = urlParams.get('token');
 		var baseUrl;
+		var assuntosExistentes = []; // Lista de assuntos já cadastrados no sistema
+		var assuntosProjeto = []; // Lista de assuntos do projeto atual (objetos com id e descricao)
         $(document).ready(function() {
 			if (window.location.hostname === "localhost") {
 				baseUrl = "https://localhost:44349/";
@@ -440,6 +480,31 @@ input:checked + .slider:before {
 					if (data.centroDeCusto) {
 						preencherFormularioComDadosDeEdicao(data.centroDeCusto);
 					}
+					
+					// Carregar assuntos do projeto se estiver editando
+					if (data.centroDeCusto && data.centroDeCusto.assuntos) {
+						assuntosProjeto = data.centroDeCusto.assuntos;
+						assuntosProjeto.forEach(function(assunto) {
+							var tagHtml = '<span class="assunto-tag" data-assunto-id="' + assunto.id + '">' + 
+								assunto.descricao + 
+								'<span class="remove-assunto" data-assunto-id="' + assunto.id + '"><i class="fa fa-times"></i></span>' +
+								'</span>';
+							
+							$("#assuntosContainer").append(tagHtml);
+						});
+						
+						// Adicionar evento para remover o assunto
+						$(".remove-assunto").off("click").on("click", function() {
+							var assuntoId = $(this).data("assunto-id");
+							removerAssunto(assuntoId);
+						});
+					}
+					
+					// Configurar autocomplete de assuntos usando os dados já carregados
+					if (data.assuntos) {
+						assuntosExistentes = data.assuntos;
+						configurarAutocompleteAssuntos();
+					}
 				},
 				error: function(xhr, status, error) {
 					// Tratar erros da chamada AJAX
@@ -459,7 +524,7 @@ input:checked + .slider:before {
 
 			// Selecionar opções em dropdowns
 			$('#listaGestor').val(centroDeCusto.idGestor).trigger('change');
-			$('#statusSituacao').val(centroDeCusto.statusSituacao).trigger('change');
+			$('#statusSituacao').val(centroDeCusto.situacao).trigger('change');
 
 			// Configurar datas
 			$('#dataInicio').datepicker('update', new Date(centroDeCusto.dataInicio));
@@ -576,7 +641,7 @@ input:checked + .slider:before {
 			var nomeCliente = document.getElementById("nomeCliente").value;
 			var listaGestor = document.getElementById("listaGestor").value;
 			var nomeUnidade = document.getElementById("nomeUnidade").value;
-			var statusSituacao = document.getElementById("statusSituacao").value;
+			var situacao = document.getElementById("statusSituacao").value;
 			var dataInicio = document.getElementById("dataInicio").value;
 			var dataFim = document.getElementById("dataFim").value;
 			var controleVSB = document.getElementById("controleVSB").checked;
@@ -599,13 +664,14 @@ input:checked + .slider:before {
 				cliente: nomeCliente,
 				idGestor: parseInt(listaGestor), // Certifique-se de converter para inteiro
 				unidade: nomeUnidade,
-				statusSituacao: parseInt(statusSituacao), // Certifique-se de converter para inteiro
+				situacao: parseInt(situacao), // Certifique-se de converter para inteiro
 				dataInicio: formatDate(dataInicio), // Converta a data para o formato correto
 				dataFim: formatDate(dataFim), // Converta a data para o formato correto
 				observacao: descricaoObservacao,
 				controleVSB: controleVSB,
 				atividades: atividades,
-				equipe: equipeSelecionada
+				equipe: equipeSelecionada,
+				assuntos: assuntosProjeto // Incluir os assuntos como parte do objeto centroCusto
 			};
 			
 			if (idCentroDeCusto !== undefined && idCentroDeCusto !== null && idCentroDeCusto !== "0") {
@@ -658,7 +724,6 @@ input:checked + .slider:before {
 		}
 
 		function enviarDadosParaBackend(centroCusto) {
-		
 			// Enviar uma solicitação HTTP POST para o backend
 			fetch(baseUrl + 'api/CentroDeCusto', {
 				method: 'POST',
@@ -672,15 +737,15 @@ input:checked + .slider:before {
 				// Tratar a resposta do backend, se necessário
 				console.log(data);
 				// Redirecionar ou exibir uma mensagem de sucesso, por exemplo
-				alert('Centro de custo salvo com sucesso!');
+				alert('Centro de Custo salvo com sucesso!');
 				limparFormulario();
-				voltarParaListagem();
+				window.location.href = "./listagem_projetos.html";
 			})
 			.catch(error => {
 				// Tratar erros de requisição ou do backend, se necessário
 				console.error(error);
 				// Exibir uma mensagem de erro, por exemplo
-				alert('Ocorreu um erro ao salvar o centro de custo. Por favor, tente novamente mais tarde.');
+				alert('Ocorreu um erro ao salvar o Centro de Custo. Por favor, tente novamente mais tarde.');
 				const modalCarregamento = document.getElementById('modalCarregamento');
 				modalCarregamento.classList.remove('show');
 			});
@@ -723,6 +788,11 @@ input:checked + .slider:before {
 			
 			const modalCarregamento = document.getElementById('modalCarregamento');
 			modalCarregamento.classList.remove('show');
+			
+			$('#tabelaAtividades tbody').empty();
+			$('#tabelaAtividades').hide();
+			$('#assuntosContainer').empty();
+			assuntosProjeto = [];
 		}
 		
 		function formatDate(dateStr) {
@@ -811,6 +881,124 @@ input:checked + .slider:before {
 				return false;
 			}
 
+		}
+		
+		function configurarAutocompleteAssuntos() {
+			// Configurar autocomplete para o campo de assuntos
+			$("#assuntoInput").autocomplete({
+				source: function(request, response) {
+					var term = request.term.toLowerCase();
+					var matches = assuntosExistentes.filter(function(assunto) {
+						return assunto.descricao.toLowerCase().indexOf(term) !== -1;
+					});
+					response(matches.map(function(assunto) {
+						return {
+							label: assunto.descricao,
+							value: assunto.descricao,
+							id: assunto.id
+						};
+					}));
+				},
+				minLength: 1,
+				select: function(event, ui) {
+					adicionarAssunto(ui.item.id, ui.item.value);
+					return false;
+				}
+			});
+			
+			// Adicionar evento para adicionar assunto ao pressionar Enter
+			$("#assuntoInput").keypress(function(e) {
+				if (e.which == 13) { // Enter key
+					e.preventDefault();
+					var valor = $(this).val().trim();
+					if (valor) {
+						// Verificar se o assunto já existe no sistema
+						var assuntoExistente = assuntosExistentes.find(function(a) {
+							return a.descricao.toLowerCase() === valor.toLowerCase();
+						});
+						
+						if (assuntoExistente) {
+							adicionarAssunto(assuntoExistente.id, assuntoExistente.descricao);
+						} else {
+							// Se não existir, criar um novo objeto de assunto
+							adicionarAssunto(null, valor);
+						}
+						
+						$(this).val('');
+					}
+				}
+			});
+			
+			// Adicionar evento para o botão de adicionar assunto
+			$("#btnAdicionarAssunto").click(function() {
+				var valor = $("#assuntoInput").val().trim();
+				if (valor) {
+					// Verificar se o assunto já existe no sistema
+					var assuntoExistente = assuntosExistentes.find(function(a) {
+						return a.descricao.toLowerCase() === valor.toLowerCase();
+					});
+					
+					if (assuntoExistente) {
+						adicionarAssunto(assuntoExistente.id, assuntoExistente.descricao);
+					} else {
+						// Se não existir, criar um novo objeto de assunto
+						adicionarAssunto(null, valor);
+					}
+					
+					$("#assuntoInput").val('');
+				}
+			});
+		}
+		
+		function adicionarAssunto(id, descricao) {
+			// Remover espaços extras, mas manter a capitalização original
+			var descricaoFormatada = descricao.replace(/\s+/g, ' ').trim();
+			
+			// Verificar se o assunto já foi adicionado (ignorando maiúsculas/minúsculas)
+			if (assuntosProjeto.some(a => a.descricao.toLowerCase() === descricaoFormatada.toLowerCase())) {
+				alert("Este assunto já foi adicionado ao projeto.");
+				return;
+			}
+			
+			// Criar objeto de assunto
+			var novoAssunto = {
+				id: id || -1, // Usar -1 para novos assuntos ao invés de null
+				descricao: descricaoFormatada
+			};
+			
+			// Adicionar à lista de assuntos do projeto
+			assuntosProjeto.push(novoAssunto);
+			
+			// Adicionar visualmente como tag
+			var tagHtml = '<span class="assunto-tag" data-assunto-id="' + (id || -1) + '">' + 
+				descricaoFormatada + 
+				'<span class="remove-assunto" data-assunto-id="' + (id || -1) + '"><i class="fa fa-times"></i></span>' +
+				'</span>';
+			
+			$("#assuntosContainer").append(tagHtml);
+			
+			// Adicionar evento para remover o assunto
+			$(".remove-assunto").off("click").on("click", function() {
+				var assuntoId = $(this).data("assunto-id");
+				removerAssunto(assuntoId);
+			});
+
+			// Limpar o campo de input após adicionar o assunto
+			$("#assuntoInput").val('');
+		}
+		
+		function removerAssunto(assuntoId) {
+			// Remover da lista de assuntos
+			assuntosProjeto = assuntosProjeto.filter(function(a) {
+				return a.id !== assuntoId && a.id !== -1;
+			});
+			
+			// Remover visualmente
+			$(".assunto-tag").each(function() {
+				if ($(this).data("assunto-id") === assuntoId) {
+					$(this).remove();
+				}
+			});
 		}
 
     </script>

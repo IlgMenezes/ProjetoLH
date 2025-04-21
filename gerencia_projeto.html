@@ -42,11 +42,11 @@
             border-radius: 10px; /* Borda arredondada */
         }
 
-        .setor, .atividade, .usuario {
+        .setor, .atividade, .usuario, .fase {
             cursor: pointer;
         }
 
-        .setor i, .atividade i {
+        .setor i, .atividade i, .fase i {
             margin-right: 5px;
         }
 
@@ -58,6 +58,12 @@
         .usuario {
             line-height: 1.3;
             font-size: 0.8em;
+        }
+        
+        .fase {
+            background-color: #e9ecef;
+            line-height: 1.6;
+            font-size: 0.95em;
         }
 
         .nested-table {
@@ -107,6 +113,10 @@
             color: #007bff;
         }
 
+        .fase i {
+            color: #6610f2;
+        }
+
         .atividade i {
             color: #28a745;
         }
@@ -133,10 +143,11 @@
                     <p><strong>Nome:</strong> <span id="nomeCentroCusto"></span></p>
                     <p><strong>Cliente:</strong> <span id="clienteCentroCusto"></span></p>
                     <p><strong>Unidade:</strong> <span id="unidadeCentroCusto"></span></p>
-                    <p><strong>Situação:</strong> <span id="situacaoCentroCusto"></span></p>
+                    <p><strong>Gerente:</strong> <span id="gerenteCentroCusto"></span></p>
                     <p><strong>Data de Início:</strong> <span id="dataInicioCentroCusto"></span></p>
                     <p><strong>Data de Término:</strong> <span id="dataFimCentroCusto"></span></p>
                     <p><strong>Observação:</strong> <span id="observacaoCentroCusto"></span></p>
+                    <p><strong>Situação:</strong> <span id="situacaoCentroCusto"></span></p>
                 </div>
 
 
@@ -177,6 +188,21 @@
         var token = urlParams.get('token');
         var maiorFunc = 0;     
         var usuarioSelecionado;
+        
+        // Enum para fases de atividade
+        const FaseAtividade = {
+            DESENVOLVIMENTO: 1,
+            IMPLANTACAO: 2,
+            NAO_SE_APLICA: 99,
+            getName: function(id) {
+                switch(id) {
+                    case this.DESENVOLVIMENTO: return "Desenvolvimento";
+                    case this.IMPLANTACAO: return "Implantação";
+                    case this.NAO_SE_APLICA:
+                    default: return "Não se aplica";
+                }
+            }
+        };
 
         $(document).ready(function() {
             if (window.location.hostname === "localhost") {
@@ -192,6 +218,11 @@
 
             $(document).on('click', '.setor', function() {
                 $(this).next('.atividades').toggle();
+                $(this).find('i').toggleClass('fa-chevron-right fa-chevron-down'); // Alterna entre os ícones
+            });
+
+            $(document).on('click', '.fase', function() {
+                $(this).next('.atividades-fase').toggle();
                 $(this).find('i').toggleClass('fa-chevron-right fa-chevron-down'); // Alterna entre os ícones
             });
 
@@ -247,6 +278,7 @@
             $('#nomeCentroCusto').text(response.centroDeCusto.nomeCentroDeCusto);
             $('#clienteCentroCusto').text(response.centroDeCusto.cliente);
             $('#unidadeCentroCusto').text(response.centroDeCusto.unidade);
+            $('#gerenteCentroCusto').text(response.usuarios.find(u => u.id === response.centroDeCusto.idGestor)?.nome || 'Não encontrado');
             $('#situacaoCentroCusto').text(response.centroDeCusto.situacao);
             $('#dataInicioCentroCusto').text(response.centroDeCusto.dataInicio.split('T')[0].split('-').reverse().join('-'));
             $('#dataFimCentroCusto').text(response.centroDeCusto.dataFim.split('T')[0].split('-').reverse().join('-'));
@@ -285,39 +317,174 @@
                 setoresList += '<td colspan="4">';
                 setoresList += '<table class="table nested-table">';
                 setoresList += '<tbody>';
+                
+                // Agrupar atividades por fase
+                const atividadesPorFase = {};
+                
+                // Inicializar contadores para cada fase
+                atividadesPorFase[FaseAtividade.DESENVOLVIMENTO] = { 
+                    nome: FaseAtividade.getName(FaseAtividade.DESENVOLVIMENTO),
+                    atividades: [], 
+                    totalHorasPlanejadas: 0, 
+                    totalHoras: 0, 
+                    totalCustoHoras: 0 
+                };
+                
+                atividadesPorFase[FaseAtividade.IMPLANTACAO] = { 
+                    nome: FaseAtividade.getName(FaseAtividade.IMPLANTACAO),
+                    atividades: [], 
+                    totalHorasPlanejadas: 0, 
+                    totalHoras: 0,
+                    totalCustoHoras: 0
+                };
+                
+                atividadesPorFase[FaseAtividade.NAO_SE_APLICA] = { 
+                    nome: FaseAtividade.getName(FaseAtividade.NAO_SE_APLICA),
+                    atividades: [], 
+                    totalHorasPlanejadas: 0, 
+                    totalHoras: 0,
+                    totalCustoHoras: 0
+                };
+                
+                // Agrupar atividades por fase e calcular totais
                 setor.atividadesGerencia.forEach(function(atividade) {
-                    var saldoAtividade = atividade.totalHorasPlanejadas - atividade.totalHoras;
-                    setoresList += '<tr class="atividade">';
-                    setoresList += '<td><i class="fas fa-chevron-right"></i>' + atividade.atividade.nome + '</td>';
-                    setoresList += '<td>' + formatarNumero(atividade.totalHorasPlanejadas) + 'h</td>'; // Horas Planejadas
-                    if(maiorFunc >= 3){
-                        setoresList += '<td>' + formatarNumero(atividade.totalHoras) + 'h / ' + formatarDinheiro(atividade.totalCustoHoras) + '</td>'; // Horas Realizadas
-                    } else{
-                        setoresList += '<td>' + formatarNumero(atividade.totalHoras) + 'h</td>';
-                    }
-
-                    if (saldoAtividade < 0) {
-                        setoresList += '<td class="negativo">' + formatarNumero(saldoAtividade) + 'h</td>';
-                    } else {
-                        setoresList += '<td>' + formatarNumero(saldoAtividade) + 'h</td>';
-                    }
+                    const idFase = atividade.atividade.idFaseAtividade || FaseAtividade.NAO_SE_APLICA;
                     
-                    setoresList += '</tr>';
-                    setoresList += '<tr class="usuarios" style="display: none;">';
-                    setoresList += '<td colspan="4">';
-                    setoresList += '<table class="table nested-table">';
-                    setoresList += '<tbody>';
-                    atividade.usuariosGerencia?.forEach(function(usuario) {
-                        setoresList += '<tr class="usuario">';
-                        setoresList += '<td><i class="fas fa-chevron-right"></i>' + usuario.usuario?.nome + '</td>';
-                        setoresList += '<td>' + formatarNumero(usuario.totalHorasNaAtividade) + 'h</td>';
+                    // Verificar se o idFase é um dos valores válidos, caso contrário usar NAO_SE_APLICA
+                    const faseKey = [FaseAtividade.DESENVOLVIMENTO, FaseAtividade.IMPLANTACAO].includes(idFase) 
+                        ? idFase 
+                        : FaseAtividade.NAO_SE_APLICA;
+                    
+                    // Adicionar atividade ao grupo correspondente
+                    atividadesPorFase[faseKey].atividades.push(atividade);
+                    
+                    // Atualizar totais da fase
+                    atividadesPorFase[faseKey].totalHorasPlanejadas += atividade.totalHorasPlanejadas;
+                    atividadesPorFase[faseKey].totalHoras += atividade.totalHoras;
+                    atividadesPorFase[faseKey].totalCustoHoras += atividade.totalCustoHoras;
+                });
+                
+                // Verificar se todas as atividades são apenas da fase "Não se aplica"
+                const apenasNaoSeAplica = (
+                    atividadesPorFase[FaseAtividade.DESENVOLVIMENTO].atividades.length === 0 && 
+                    atividadesPorFase[FaseAtividade.IMPLANTACAO].atividades.length === 0 && 
+                    atividadesPorFase[FaseAtividade.NAO_SE_APLICA].atividades.length > 0
+                );
+                
+                if (apenasNaoSeAplica) {
+                    // Se só tem atividades "Não se aplica", renderizar diretamente sem o nível de fase
+                    atividadesPorFase[FaseAtividade.NAO_SE_APLICA].atividades.forEach(function(atividade) {
+                        var saldoAtividade = atividade.totalHorasPlanejadas - atividade.totalHoras;
+                        setoresList += '<tr class="atividade">';
+                        setoresList += '<td><i class="fas fa-chevron-right"></i>' + atividade.atividade.nome + '</td>';
+                        setoresList += '<td>' + formatarNumero(atividade.totalHorasPlanejadas) + 'h</td>'; // Horas Planejadas
+                        
+                        if(maiorFunc >= 3){
+                            setoresList += '<td>' + formatarNumero(atividade.totalHoras) + 'h / ' + formatarDinheiro(atividade.totalCustoHoras) + '</td>'; // Horas Realizadas
+                        } else{
+                            setoresList += '<td>' + formatarNumero(atividade.totalHoras) + 'h</td>';
+                        }
+
+                        if (saldoAtividade < 0) {
+                            setoresList += '<td class="negativo">' + formatarNumero(saldoAtividade) + 'h</td>';
+                        } else {
+                            setoresList += '<td>' + formatarNumero(saldoAtividade) + 'h</td>';
+                        }
+                        
+                        setoresList += '</tr>';
+                        setoresList += '<tr class="usuarios" style="display: none;">';
+                        setoresList += '<td colspan="4">';
+                        setoresList += '<table class="table nested-table">';
+                        setoresList += '<tbody>';
+                        atividade.usuariosGerencia?.forEach(function(usuario) {
+                            setoresList += '<tr class="usuario">';
+                            setoresList += '<td><i class="fas fa-chevron-right"></i>' + usuario.usuario?.nome + '</td>';
+                            setoresList += '<td>' + formatarNumero(usuario.totalHorasNaAtividade) + 'h</td>';
+                            setoresList += '</tr>';
+                        });
+                        setoresList += '</tbody>';
+                        setoresList += '</table>';
+                        setoresList += '</td>';
                         setoresList += '</tr>';
                     });
-                    setoresList += '</tbody>';
-                    setoresList += '</table>';
-                    setoresList += '</td>';
-                    setoresList += '</tr>';
-                });
+                } else {
+                    // Renderizar cada fase e suas atividades
+                    Object.keys(atividadesPorFase).forEach(function(faseId) {
+                        const fase = atividadesPorFase[faseId];
+                        
+                        // Pular fases sem atividades
+                        if (fase.atividades.length === 0) return;
+                        
+                        const saldoFase = fase.totalHorasPlanejadas - fase.totalHoras;
+                        
+                        // Linha da fase
+                        setoresList += '<tr class="fase">';
+                        setoresList += '<td><i class="fas fa-chevron-right"></i><strong>' + 'Fase: ' + fase.nome + '</strong></td>';
+                        setoresList += '<td>' + formatarNumero(fase.totalHorasPlanejadas) + 'h</td>';
+                        
+                        if(maiorFunc >= 3){
+                            setoresList += '<td>' + formatarNumero(fase.totalHoras) + 'h / ' + formatarDinheiro(fase.totalCustoHoras) + '</td>';
+                        } else{
+                            setoresList += '<td>' + formatarNumero(fase.totalHoras) + 'h</td>';
+                        }
+                        
+                        if (saldoFase < 0) {
+                            setoresList += '<td class="negativo">' + formatarNumero(saldoFase) + 'h</td>';
+                        } else {
+                            setoresList += '<td>' + formatarNumero(saldoFase) + 'h</td>';
+                        }
+                        
+                        setoresList += '</tr>';
+                        
+                        // Atividades da fase (inicialmente ocultas)
+                        setoresList += '<tr class="atividades-fase" style="display: none;">';
+                        setoresList += '<td colspan="4">';
+                        setoresList += '<table class="table nested-table">';
+                        setoresList += '<tbody>';
+                        
+                        // Listar atividades da fase
+                        fase.atividades.forEach(function(atividade) {
+                            var saldoAtividade = atividade.totalHorasPlanejadas - atividade.totalHoras;
+                            setoresList += '<tr class="atividade">';
+                            setoresList += '<td><i class="fas fa-chevron-right"></i>' + atividade.atividade.nome + '</td>';
+                            setoresList += '<td>' + formatarNumero(atividade.totalHorasPlanejadas) + 'h</td>'; // Horas Planejadas
+                            
+                            if(maiorFunc >= 3){
+                                setoresList += '<td>' + formatarNumero(atividade.totalHoras) + 'h / ' + formatarDinheiro(atividade.totalCustoHoras) + '</td>'; // Horas Realizadas
+                            } else{
+                                setoresList += '<td>' + formatarNumero(atividade.totalHoras) + 'h</td>';
+                            }
+
+                            if (saldoAtividade < 0) {
+                                setoresList += '<td class="negativo">' + formatarNumero(saldoAtividade) + 'h</td>';
+                            } else {
+                                setoresList += '<td>' + formatarNumero(saldoAtividade) + 'h</td>';
+                            }
+                            
+                            setoresList += '</tr>';
+                            setoresList += '<tr class="usuarios" style="display: none;">';
+                            setoresList += '<td colspan="4">';
+                            setoresList += '<table class="table nested-table">';
+                            setoresList += '<tbody>';
+                            atividade.usuariosGerencia?.forEach(function(usuario) {
+                                setoresList += '<tr class="usuario">';
+                                setoresList += '<td><i class="fas fa-chevron-right"></i>' + usuario.usuario?.nome + '</td>';
+                                setoresList += '<td>' + formatarNumero(usuario.totalHorasNaAtividade) + 'h</td>';
+                                setoresList += '</tr>';
+                            });
+                            setoresList += '</tbody>';
+                            setoresList += '</table>';
+                            setoresList += '</td>';
+                            setoresList += '</tr>';
+                        });
+                        
+                        setoresList += '</tbody>';
+                        setoresList += '</table>';
+                        setoresList += '</td>';
+                        setoresList += '</tr>';
+                    });
+                }
+                
                 setoresList += '</tbody>';
                 setoresList += '</table>';
                 setoresList += '</td>';
