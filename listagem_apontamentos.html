@@ -86,18 +86,27 @@
 		</div>
 	</div>
 	
-	<div class="d-flex container justify-content-end mb-3">
-		<button type="button" class="btn btn-primary" onclick="voltarParaUsuarios()">Voltar</button>&nbsp&nbsp
-		<button type="button" class="btn btn-primary" onclick="adicionarApontamento()">
-            <i class="fa fa-plus"></i> Adicionar
-        </button>
-				&nbsp&nbsp&nbsp&nbsp
-				<img onclick="exportarParaExcel()" title="Exportar para Excel" src="https://cdn-icons-png.flaticon.com/512/732/732220.png" alt="Excel" style="height: 30px; width: 30px;">
-				&nbsp&nbsp 
-				<img id="exportacaoCompletaIcon" class="gray-icon" onclick="exportarHorasTodosFuncionarios()"title="Exportação Completa" src="https://cdn-icons-png.flaticon.com/512/732/732220.png" alt="Excel" style="height: 30px; width: 30px;">
+	<div class="container mb-3">
+		<div class="d-flex justify-content-between align-items-center">
+			<div class="input-group" style="padding-left: 30%;width: 75%;">
+				<span class="input-group-text bg-primary text-white">
+					<i class="fa fa-search"></i>
+				</span>
+				<input type="text" class="form-control" id="campoPesquisa" placeholder="Pesquisar por cliente ou observação..." aria-label="Pesquisar">
+				<button class="btn btn-outline-secondary" type="button" id="btnPesquisar" onclick="pesquisarApontamentos()">Pesquisar</button>
+				<button class="btn btn-outline-secondary" type="button" id="btnLimparPesquisa" onclick="limparPesquisa()">Limpar</button>
+			</div>
+			<div class="d-flex align-items-center gap-2">
+				<button type="button" class="btn btn-primary" onclick="voltarParaUsuarios()">Voltar</button>
+				<button type="button" class="btn btn-primary" onclick="adicionarApontamento()">
+					<i class="fa fa-plus"></i> Adicionar
+				</button>
+				<img onclick="exportarParaExcel()" title="Exportar para Excel" src="https://cdn-icons-png.flaticon.com/512/732/732220.png" alt="Excel" style="height: 30px; width: 30px; cursor: pointer;">
+				<img id="exportacaoCompletaIcon" class="gray-icon" onclick="exportarHorasTodosFuncionarios()" title="Exportação Completa" src="https://cdn-icons-png.flaticon.com/512/732/732220.png" alt="Excel" style="height: 30px; width: 30px; cursor: pointer;">
+			</div>
+		</div>
+	</div>
 
-    </div>
- 
 	<div class="main-container">
 		<div class="scrollable-table">
 			<table class="table">
@@ -160,6 +169,13 @@
 					$('#centroCustoSelect').val(0);
 					carregarApontamentos();
 				});
+
+				// Adicionar event listener para o campo de pesquisa
+				$("#campoPesquisa").keypress(function(e) {
+					if(e.which == 13) { // 13 é o código para a tecla Enter
+						pesquisarApontamentos();
+					}
+				});
 			}
 		});
     
@@ -221,37 +237,9 @@
 							type: 'GET',
 							success: function(data) {
 						if (data && data.length > 0) {
-							var centroCustoSelecionado = parseInt($('#centroCustoSelect').val());
-							var tabelaApontamentos = '';
-							totalHoras = 0;
-
-							data.forEach(function(apontamento) {
-								if (centroCustoSelecionado === 0 || apontamento.centroDeCusto.id === centroCustoSelecionado) {
-									tabelaApontamentos += '<tr>';
-									tabelaApontamentos += '<td>' + apontamento.funcionario.nome + '</td>';
-									tabelaApontamentos += '<td class="coluna-data">' + formatDateToShow(apontamento.dataApontamento)  + '</td>';
-									tabelaApontamentos += '<td class="coluna-horas-trabalhadas">' + apontamento.saldoHoras + '</td>';
-									totalHoras += apontamento.valorSaldoHoras;
-									tabelaApontamentos += '<td>' + apontamento.horaInicio + '</td>';
-									tabelaApontamentos += '<td>' + apontamento.horaFim + '</td>';
-									tabelaApontamentos += '<td>' + apontamento.nomeSetor + '</td>';
-									tabelaApontamentos += '<td>' + apontamento.nomeAtividade + '</td>';
-									tabelaApontamentos += '<td>' + apontamento.centroDeCusto.nomeCentroDeCusto + '</td>';
-									tabelaApontamentos += '<td>' + apontamento.centroDeCusto.cliente + '</td>';
-									tabelaApontamentos += '<td class="coluna-observacao">' + escapeHtml(apontamento.observacao) + '</td>';
-									tabelaApontamentos += '<td class="coluna-botoes">';
-									tabelaApontamentos += '<button class="btn btn-primary btn-sm btn-spacing" onclick="editarApontamento('+ apontamento.id +')"><i class="fa fa-edit"></i></button>';	
-									tabelaApontamentos += '<button class="btn btn-danger btn-sm btn-spacing" onclick="excluirApontamento('+ apontamento.id +')" data-toggle="tooltip" data-placement="top" title="Excluir"><i class="fas fa-trash-alt"></i></button>';
-									tabelaApontamentos += '</td>';
-									tabelaApontamentos += '</tr>';
-								}
-							});
-
-							tabelaApontamentos += '<tr>';
-							tabelaApontamentos += '<td colspan="2" style="text-align: right;"><b>Total de Horas:</b></td>';
-							tabelaApontamentos += '<td><b>' + totalHoras.toFixed(2) + '</b></td>';
-
-							$('#apontamento-list').html(tabelaApontamentos);
+							dadosApontamentosOriginais = data;
+							renderizarApontamentos(data);
+							
 							// Carrega os centros de custo no filtro
 							var centrosCustoUnicos = data.map(function(apontamento) {
 								return { id: apontamento.centroDeCusto.id, nome: apontamento.centroDeCusto.nomeCentroDeCusto };
@@ -265,10 +253,6 @@
 								optionsCentroCusto += '<option value="' + centroCusto.id + '">' + centroCusto.nome + '</option>';
 							});
 							$('#centroCustoSelect').html(optionsCentroCusto);
-							if (centroCustoSelecionado != 0){ 
-								$('#centroCustoSelect').html(optionsCentroCusto).val(centroCustoSelecionado);
-							}
-							
 						} else {
 							// Se não houver apontamentos, exiba a mensagem e esconda a tabela.
 							$('#apontamento-list').html(`
@@ -390,6 +374,85 @@
 				.replace(/>/g, "&gt;")
 				.replace(/"/g, "&quot;")
 				.replace(/'/g, "&#039;");
+		}
+
+		// Variável global para armazenar os dados originais
+		var dadosApontamentosOriginais = [];
+
+		// Função para pesquisar apontamentos
+		function pesquisarApontamentos() {
+			var termoPesquisa = $("#campoPesquisa").val().toLowerCase().trim();
+			
+			if (termoPesquisa === "") {
+				renderizarApontamentos(dadosApontamentosOriginais);
+				return;
+			}
+			
+			var apontamentosFiltrados = dadosApontamentosOriginais.filter(function(apontamento) {
+				var matchCliente = apontamento.centroDeCusto.cliente && 
+					apontamento.centroDeCusto.cliente.toLowerCase().includes(termoPesquisa);
+				var matchObservacao = apontamento.observacao && 
+					apontamento.observacao.toLowerCase().includes(termoPesquisa);
+				
+				return matchCliente || matchObservacao;
+			});
+			
+			renderizarApontamentos(apontamentosFiltrados);
+		}
+
+		// Função para limpar a pesquisa
+		function limparPesquisa() {
+			$("#campoPesquisa").val("");
+			renderizarApontamentos(dadosApontamentosOriginais);
+		}
+
+		// Função para renderizar os apontamentos
+		function renderizarApontamentos(apontamentos) {
+			var tabelaApontamentos = '';
+			totalHoras = 0;
+
+			if (apontamentos.length === 0) {
+				tabelaApontamentos = `
+					<tr>
+						<td colspan="11" class="text-center">
+							<div class="text-center mt-4">
+								<h5>Nenhum apontamento encontrado!</h5>
+							</div>
+						</td>
+					</tr>`;
+			} else {
+				var centroCustoSelecionado = parseInt($('#centroCustoSelect').val());
+				
+				apontamentos.forEach(function(apontamento) {
+					if (centroCustoSelecionado === 0 || apontamento.centroDeCusto.id === centroCustoSelecionado) {
+						tabelaApontamentos += '<tr>';
+						tabelaApontamentos += '<td>' + apontamento.funcionario.nome + '</td>';
+						tabelaApontamentos += '<td class="coluna-data">' + formatDateToShow(apontamento.dataApontamento)  + '</td>';
+						tabelaApontamentos += '<td class="coluna-horas-trabalhadas">' + apontamento.saldoHoras + '</td>';
+						totalHoras += apontamento.valorSaldoHoras;
+						tabelaApontamentos += '<td>' + apontamento.horaInicio + '</td>';
+						tabelaApontamentos += '<td>' + apontamento.horaFim + '</td>';
+						tabelaApontamentos += '<td>' + apontamento.nomeSetor + '</td>';
+						tabelaApontamentos += '<td>' + apontamento.nomeAtividade + '</td>';
+						tabelaApontamentos += '<td>' + apontamento.centroDeCusto.nomeCentroDeCusto + '</td>';
+						tabelaApontamentos += '<td>' + apontamento.centroDeCusto.cliente + '</td>';
+						tabelaApontamentos += '<td class="coluna-observacao">' + escapeHtml(apontamento.observacao) + '</td>';
+						tabelaApontamentos += '<td class="coluna-botoes">';
+						tabelaApontamentos += '<button class="btn btn-primary btn-sm btn-spacing" onclick="editarApontamento('+ apontamento.id +')"><i class="fa fa-edit"></i></button>';	
+						tabelaApontamentos += '<button class="btn btn-danger btn-sm btn-spacing" onclick="excluirApontamento('+ apontamento.id +')" data-toggle="tooltip" data-placement="top" title="Excluir"><i class="fas fa-trash-alt"></i></button>';
+						tabelaApontamentos += '</td>';
+						tabelaApontamentos += '</tr>';
+					}
+				});
+
+				tabelaApontamentos += '<tr>';
+				tabelaApontamentos += '<td colspan="2" style="text-align: right;"><b>Total de Horas:</b></td>';
+				tabelaApontamentos += '<td><b>' + totalHoras.toFixed(2) + '</b></td>';
+				tabelaApontamentos += '<td colspan="8"></td>';
+				tabelaApontamentos += '</tr>';
+			}
+
+			$('#apontamento-list').html(tabelaApontamentos);
 		}
 
 		function exportarHorasTodosFuncionarios() {
